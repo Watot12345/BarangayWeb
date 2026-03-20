@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Barangay San Agustin - Community Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Bottom Nav Active */
+        .nav-item.active .nav-icon { color: #1d4ed8; }
+        .nav-item.active .nav-label { color: #1d4ed8; font-weight: 700; }
+        .nav-item.active { border-top: 3px solid #1d4ed8; }
+
+        /* Module cards */
+        .module-card {
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 30px -8px rgba(0,0,0,0.13);
+        }
+        .module-card:active { transform: scale(0.97); }
+
+        /* Modal */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-bg.open { display: flex; }
+        .modal-sheet {
+            background: white;
+            border-radius: 1.5rem 1.5rem 0 0;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(60px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Post Card Styles */
+        .post-card {
+            transition: all 0.2s ease;
+        }
+        .post-card:hover {
+            background: #fafafc;
+        }
+        .like-btn.liked {
+            color: #ef4444;
+        }
+        .like-btn.liked i {
+            animation: heartPop 0.3s ease;
+        }
+        @keyframes heartPop {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Comment section */
+        .comment-input:focus {
+            border-color: #1d4ed8;
+            outline: none;
+        }
+
+        /* Badge pulse */
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .badge-pulse { animation: pulse-badge 2s infinite; }
+
+        /* Welcome gradient */
+        .welcome-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+        }
+
+        .stat-ring {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Scrollable feed */
+        .feed-container {
+            max-height: calc(100vh - 280px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen pb-20">
+
+    <!-- TOP NAV -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-2xl mx-auto px-4 h-14 flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold shadow">SA</div>
+                <div>
+                    <p class="text-sm font-bold text-blue-900 leading-none">Brgy. San Agustin</p>
+                    <p class="text-[10px] text-slate-400">Community Hub</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="relative p-2" onclick="openModal('emergencyModal')">
+                    <i class="fas fa-phone-alt text-slate-500 text-lg"></i>
+                </button>
+                <button id="userMenuBtn" class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-200">
+                    <i class="fas fa-user text-blue-700 text-sm"></i>
+                </button>
+            </div>
+        </div>
+        <!-- User dropdown -->
+        <div id="userDropdown" class="hidden absolute right-4 top-14 bg-white rounded-xl shadow-xl border w-44 z-50">
+            <div class="px-4 py-2.5 border-b">
+                <p class="text-sm font-semibold text-slate-700" id="residentNameDisplay">Maria R. Santos</p>
+                <p class="text-xs text-slate-400">BRGY-8421</p>
+            </div>
+            <button onclick="logoutResident()" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-slate-50 flex items-center gap-2">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT (changes based on active tab) -->
+    <div id="homeContent" class="max-w-2xl mx-auto px-4 pt-4">
+        <!-- Welcome Card -->
+        <div class="welcome-gradient rounded-2xl p-5 text-white shadow-lg mb-5 relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
+            <div class="absolute -right-2 bottom-2 w-16 h-16 bg-white/5 rounded-full"></div>
+            <p class="text-blue-200 text-xs font-medium uppercase tracking-wider">Good morning 👋</p>
+            <h2 class="text-xl font-bold mt-0.5" id="welcomeName">Maria Santos</h2>
+            <p class="text-blue-200 text-xs mt-1">Resident since 2020</p>
+            <div class="flex gap-3 mt-4">
+                <div class="bg-white/15 rounded-xl px-3 py-2 text-center flex-1">
+                    <p class="text-lg font-bold" id="totalActivityCount">8</p>
+                    <p class="text-[10px] text-blue-200">Posts</p>
+                </div>
+                <div class="bg-white/15 rounded-xl px-3 py-2 text-center flex-1">
+                    <p class="text-lg font-bold text-green-300">Active</p>
+                    <p class="text-[10px] text-blue-200">Status</p>
+                </div>
+                <div class="bg-white/15 rounded-xl px-3 py-2 text-center flex-1">
+                    <p class="text-lg font-bold">156</p>
+                    <p class="text-[10px] text-blue-200">Residents Online</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Post Button -->
+        <button onclick="openModal('createPostModal')" class="w-full bg-white rounded-2xl p-3 shadow-sm border border-slate-100 mb-4 flex items-center gap-3 hover:bg-slate-50 transition">
+            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <i class="fas fa-pen text-blue-600 text-sm"></i>
+            </div>
+            <span class="text-slate-500 text-sm">What's on your mind, Maria?</span>
+            <i class="fas fa-image text-slate-400 ml-auto"></i>
+        </button>
+
+        <!-- Feed Tabs -->
+        <div class="flex gap-2 mb-4 border-b border-slate-200">
+            <button onclick="setFeedTab('recent')" id="recentTabBtn" class="px-4 py-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600">Recent</button>
+            <button onclick="setFeedTab('popular')" id="popularTabBtn" class="px-4 py-2 text-sm font-semibold text-slate-500">Popular</button>
+            <button onclick="setFeedTab('questions')" id="questionsTabBtn" class="px-4 py-2 text-sm font-semibold text-slate-500">Questions</button>
+        </div>
+
+        <!-- Community Feed -->
+        <div id="communityFeed" class="space-y-4 pb-4 feed-container">
+            <!-- Posts will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION (Updated: Community Feed replaces Records) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 shadow-lg">
+        <div class="max-w-2xl mx-auto grid grid-cols-5 h-16">
+            <button class="nav-item active flex flex-col items-center justify-center gap-0.5 border-t-2 border-blue-700" onclick="switchTab('home', this)">
+                <i class="nav-icon fas fa-home text-blue-700 text-lg"></i>
+                <span class="nav-label text-[9px] text-blue-700 font-bold">Home</span>
+            </button>
+            <button class="nav-item flex flex-col items-center justify-center gap-0.5 border-t-2 border-transparent" onclick="switchTab('feed', this); openModal('createPostModal')">
+                <i class="nav-icon fas fa-pen-square text-slate-400 text-lg"></i>
+                <span class="nav-label text-[9px] text-slate-400">Post</span>
+            </button>
+            <button class="nav-item flex flex-col items-center justify-center gap-0.5 border-t-2 border-transparent" onclick="switchTab('health', this); openModal('healthModal')">
+                <i class="nav-icon fas fa-heartbeat text-slate-400 text-lg"></i>
+                <span class="nav-label text-[9px] text-slate-400">Health</span>
+            </button>
+            <button class="nav-item flex flex-col items-center justify-center gap-0.5 border-t-2 border-transparent" onclick="switchTab('jobs', this); openModal('jobsModal')">
+                <i class="nav-icon fas fa-briefcase text-slate-400 text-lg"></i>
+                <span class="nav-label text-[9px] text-slate-400">Jobs</span>
+            </button>
+            <button class="nav-item flex flex-col items-center justify-center gap-0.5 border-t-2 border-transparent" onclick="switchTab('scholar', this); openModal('scholarshipModal')">
+                <i class="nav-icon fas fa-graduation-cap text-slate-400 text-lg"></i>
+                <span class="nav-label text-[9px] text-slate-400">Scholar</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============ MODALS ============ -->
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal-bg" onclick="closeModalOutside(event, 'createPostModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-blue-700 flex items-center gap-2"><i class="fas fa-pen-alt"></i> Create Post</h3>
+                <button onclick="closeModal('createPostModal')" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">&times;</button>
+            </div>
+            <form onsubmit="createPost(event)">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-user text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-sm">Maria R. Santos</p>
+                        <select class="text-xs text-slate-500 bg-transparent border-none focus:outline-none">
+                            <option>Public</option>
+                            <option>Barangay Residents Only</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="postContent" rows="4" placeholder="Share your thoughts, questions, or feedback..." class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:ring-2 focus:ring-blue-300 focus:outline-none resize-none" required></textarea>
+                <div class="flex gap-2 mt-3">
+                    <button type="button" class="flex-1 border border-slate-200 rounded-xl py-2 text-sm text-slate-600"><i class="fas fa-image mr-1"></i> Photo</button>
+                    <button type="button" class="flex-1 border border-slate-200 rounded-xl py-2 text-sm text-slate-600"><i class="fas fa-map-marker-alt mr-1"></i> Location</button>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold mt-4 hover:bg-blue-700 transition">Post to Community</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div id="commentModal" class="modal-bg" onclick="closeModalOutside(event, 'commentModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-blue-700 flex items-center gap-2"><i class="fas fa-comments"></i> Comments</h3>
+                <button onclick="closeModal('commentModal')" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">&times;</button>
+            </div>
+            <div id="commentList" class="max-h-64 overflow-y-auto space-y-3 mb-4">
+                <!-- Comments will be shown here -->
+            </div>
+            <div class="flex gap-2 border-t pt-3">
+                <input type="text" id="newCommentInput" placeholder="Write a comment..." class="flex-1 border border-slate-200 rounded-xl p-2 text-sm focus:ring-2 focus:ring-blue-300 focus:outline-none">
+                <button onclick="addComment()" class="bg-blue-600 text-white px-4 rounded-xl text-sm">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disaster Relief Modal -->
+    <div id="reliefModal" class="modal-bg" onclick="closeModalOutside(event, 'reliefModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-red-700 flex items-center gap-2"><i class="fas fa-hand-holding-heart"></i> Disaster Relief</h3>
+                <button onclick="closeModal('reliefModal')" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">&times;</button>
+            </div>
+            <div class="bg-red-50 rounded-xl p-3 mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle text-red-500"></i>
+                <p class="text-xs text-red-700">Relief requests are processed within 24 hours.</p>
+            </div>
+            <form onsubmit="submitReliefRequest(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Type of Assistance</label>
+                    <select class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:ring-2 focus:ring-red-300 focus:outline-none" required>
+                        <option>Food Pack</option>
+                        <option>Emergency Shelter</option>
+                        <option>Medical Assistance</option>
+                        <option>Water Supply</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Details / Reason</label>
+                    <textarea rows="3" placeholder="Describe your situation..." class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:ring-2 focus:ring-red-300 focus:outline-none resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition">Submit Relief Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Health Monitoring Modal -->
+    <div id="healthModal" class="modal-bg" onclick="closeModalOutside(event, 'healthModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-green-700 flex items-center gap-2"><i class="fas fa-heartbeat"></i> Health Log</h3>
+                <button onclick="closeModal('healthModal')" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">&times;</button>
+            </div>
+            <form onsubmit="addHealthRecord(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Blood Pressure</label>
+                    <input type="text" placeholder="e.g. 120/80" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">Notes / Symptoms</label>
+                    <textarea rows="2" placeholder="Any symptoms or notes..." class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition">Save Health Record</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Job Matching Modal -->
+    <div id="jobsModal" class="modal-bg" onclick="closeModalOutside(event, 'jobsModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-purple-700 flex items-center gap-2"><i class="fas fa-briefcase"></i> Job Openings</h3>
+                <button onclick="closeModal('jobsModal')" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">&times;</button>
+            </div>
+            <div class="space-y-3 max-h-72 overflow-y-auto">
+                <div class="border border-slate-200 rounded-xl p-3">
+                    <p class="font-semibold text-slate-800 text-sm">Barangay Admin Assistant</p>
+                    <p class="text-xs text-slate-500">₱13,500/mo · Full-time</p>
+                    <button onclick="applyJob('Admin Assistant')" class="mt-2 bg-purple-600 text-white text-xs px-4 py-1.5 rounded-lg">Apply Now</button>
+                </div>
+                <div class="border border-slate-200 rounded-xl p-3">
+                    <p class="font-semibold text-slate-800 text-sm">Community Health Worker</p>
+                    <p class="text-xs text-slate-500">₱11,000/mo · Part-time</p>
+                    <button onclick="applyJob('Community Health Worker')" class="mt-2 bg-purple-600 text-white text-xs px-4 py-1.5 rounded-lg">Apply Now</button>
+                </div>
+                <div class="border border-slate-200 rounded-xl p-3">
+                    <p class="font-semibold text-slate-800 text-sm">Disaster Response Volunteer</p>
+                    <p class="text-xs text-slate-500">Stipend · Training provided</p>
+                    <button onclick="applyJob('Disaster Volunteer')" class="mt-2 bg-purple-600 text-white text-xs px-4 py-1.5 rounded-lg">Apply Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scholarship Modal -->
+    <div id="scholarshipModal" class="modal-bg" onclick="closeModalOutside(event, 'scholarshipModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-yellow-700 flex items-center gap-2"><i class="fas fa-graduation-cap"></i> Scholarship</h3>
+                <button onclick="closeModal('scholarshipModal')" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">&times;</button>
+            </div>
+            <div class="bg-yellow-50 rounded-xl p-4 mb-4">
+                <p class="text-sm font-semibold text-yellow-800">28 Slots Available</p>
+                <p class="text-xs text-yellow-700 mt-1">Financial assistance up to ₱10,000 per semester</p>
+            </div>
+            <button onclick="applyScholarship()" class="w-full bg-yellow-600 text-white py-3 rounded-xl font-semibold">Apply for Scholarship</button>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div id="emergencyModal" class="modal-bg" onclick="closeModalOutside(event, 'emergencyModal')">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-red-700"><i class="fas fa-phone-alt"></i> Emergency Hotlines</h3>
+                <button onclick="closeModal('emergencyModal')" class="w-8 h-8 bg-slate-100 rounded-full">&times;</button>
+            </div>
+            <a href="tel:911" class="flex justify-between bg-red-50 rounded-xl p-3 mb-2"><span>🚑 Medical Emergency</span><span class="font-bold">911</span></a>
+            <a href="tel:117" class="flex justify-between bg-blue-50 rounded-xl p-3 mb-2"><span>👮 Police</span><span class="font-bold">117</span></a>
+            <a href="tel:160" class="flex justify-between bg-orange-50 rounded-xl p-3"><span>🔥 Fire Department</span><span class="font-bold">160</span></a>
+        </div>
+    </div>
+
+    <script>
+        // Sample Posts Data
+        let posts = [
+            {
+                id: 1,
+                author: "Maria R. Santos",
+                avatar: "MR",
+                content: "Good morning neighbors! Does anyone know where we can get the latest vaccination schedule for seniors? My mother needs her booster shot. Thank you! 🙏",
+                time: "2 hours ago",
+                likes: 12,
+                comments: [
+                    { author: "John D.", text: "Try the Barangay Health Center, Monday to Friday 9am-12pm.", time: "1 hour ago" },
+                    { author: "Ana C.", text: "I saw a post earlier — this Friday at the covered court!", time: "45 mins ago" }
+                ],
+                liked: false,
+                type: "question"
+            },
+            {
+                id: 2,
+                author: "Barangay Admin",
+                avatar: "BA",
+                content: "📢 ANNOUNCEMENT: Free medical mission this Saturday, March 22 at the Barangay Hall. Free check-ups, dental, and medicine distribution. Please bring your Barangay ID!",
+                time: "5 hours ago",
+                likes: 45,
+                comments: [{ author: "Rodel M.", text: "Thank you po!", time: "3 hours ago" }],
+                liked: false,
+                type: "announcement"
+            },
+            {
+                id: 3,
+                author: "Roberto M.",
+                avatar: "RM",
+                content: "Feedback: The new streetlights on San Agustin St. are great! But can we also add one near the basketball court? It's very dark at night. Thanks to the barangay for listening!",
+                time: "1 day ago",
+                likes: 28,
+                comments: [],
+                liked: false,
+                type: "feedback"
+            }
+        ];
+
+        let currentPostId = null;
+        let currentFeedTab = 'recent';
+
+        // Render Feed
+        function renderFeed() {
+            let filteredPosts = [...posts];
+            if (currentFeedTab === 'popular') {
+                filteredPosts.sort((a, b) => b.likes - a.likes);
+            } else if (currentFeedTab === 'questions') {
+                filteredPosts = filteredPosts.filter(p => p.type === 'question');
+            }
+            
+            const feedContainer = document.getElementById('communityFeed');
+            feedContainer.innerHTML = filteredPosts.map(post => `
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 post-card">
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <span class="text-blue-600 font-bold text-sm">${post.avatar}</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="font-semibold text-slate-800 text-sm">${post.author}</p>
+                                <span class="text-xs text-slate-400">${post.time}</span>
+                                ${post.type === 'question' ? '<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Question</span>' : ''}
+                                ${post.type === 'announcement' ? '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Announcement</span>' : ''}
+                            </div>
+                            <p class="text-slate-700 text-sm mt-2">${post.content}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6 pt-3 border-t border-slate-100">
+                        <button onclick="toggleLike(${post.id})" class="like-btn flex items-center gap-1 ${post.liked ? 'liked' : ''} text-slate-500 hover:text-red-500 transition">
+                            <i class="fas fa-heart text-sm"></i>
+                            <span class="text-xs">${post.likes}</span>
+                        </button>
+                        <button onclick="openCommentModal(${post.id})" class="flex items-center gap-1 text-slate-500 hover:text-blue-500 transition">
+                            <i class="fas fa-comment text-sm"></i>
+                            <span class="text-xs">${post.comments.length}</span>
+                        </button>
+                        <button class="flex items-center gap-1 text-slate-500 hover:text-green-500 transition">
+                            <i class="fas fa-share text-sm"></i>
+                            <span class="text-xs">Share</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Create Post
+        function createPost(event) {
+            event.preventDefault();
+            const content = document.getElementById('postContent').value;
+            if (!content.trim()) return;
+            
+            const newPost = {
+                id: Date.now(),
+                author: "Maria R. Santos",
+                avatar: "MR",
+                content: content,
+                time: "Just now",
+                likes: 0,
+                comments: [],
+                liked: false,
+                type: content.includes('?') || content.toLowerCase().includes('question') ? 'question' : 'feedback'
+            };
+            
+            posts.unshift(newPost);
+            renderFeed();
+            closeModal('createPostModal');
+            document.getElementById('postContent').value = '';
+            showToast('Post shared to community!', 'blue');
+        }
+
+        // Toggle Like
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                if (post.liked) {
+                    post.likes--;
+                    post.liked = false;
+                } else {
+                    post.likes++;
+                    post.liked = true;
+                }
+                renderFeed();
+            }
+        }
+
+        // Comment Modal
+        function openCommentModal(postId) {
+            currentPostId = postId;
+            const post = posts.find(p => p.id === postId);
+            const commentList = document.getElementById('commentList');
+            commentList.innerHTML = post.comments.map(c => `
+                <div class="bg-slate-50 rounded-xl p-3">
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold text-sm">${c.author}</span>
+                        <span class="text-xs text-slate-400">${c.time}</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mt-1">${c.text}</p>
+                </div>
+            `).join('');
+            if (post.comments.length === 0) {
+                commentList.innerHTML = '<p class="text-center text-slate-400 text-sm py-4">No comments yet. Be the first!</p>';
+            }
+            openModal('commentModal');
+        }
+
+        function addComment() {
+            const input = document.getElementById('newCommentInput');
+            const text = input.value.trim();
+            if (!text || !currentPostId) return;
+            
+            const post = posts.find(p => p.id === currentPostId);
+            post.comments.push({
+                author: "Maria R. Santos",
+                text: text,
+                time: "Just now"
+            });
+            input.value = '';
+            openCommentModal(currentPostId);
+            renderFeed();
+            showToast('Comment added!', 'green');
+        }
+
+        // Tab Switching (Bottom Nav)
+        function switchTab(tab, element) {
+            // Update active state
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.remove('active');
+                n.classList.remove('border-blue-700');
+                n.classList.add('border-transparent');
+                const icon = n.querySelector('.nav-icon');
+                const label = n.querySelector('.nav-label');
+                if (icon) icon.classList.remove('text-blue-700');
+                if (icon) icon.classList.add('text-slate-400');
+                if (label) label.classList.remove('text-blue-700', 'font-bold');
+                if (label) label.classList.add('text-slate-400');
+            });
+            element.classList.add('active');
+            element.classList.remove('border-transparent');
+            element.classList.add('border-blue-700');
+            const activeIcon = element.querySelector('.nav-icon');
+            const activeLabel = element.querySelector('.nav-label');
+            if (activeIcon) activeIcon.classList.add('text-blue-700');
+            if (activeLabel) activeLabel.classList.add('text-blue-700', 'font-bold');
+        }
+
+        function setFeedTab(tab) {
+            currentFeedTab = tab;
+            document.getElementById('recentTabBtn').className = tab === 'recent' ? 'px-4 py-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-sm font-semibold text-slate-500';
+            document.getElementById('popularTabBtn').className = tab === 'popular' ? 'px-4 py-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-sm font-semibold text-slate-500';
+            document.getElementById('questionsTabBtn').className = tab === 'questions' ? 'px-4 py-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-sm font-semibold text-slate-500';
+            renderFeed();
+        }
+
+        // Module Action Functions
+        function submitReliefRequest(e) {
+            e.preventDefault();
+            closeModal('reliefModal');
+            showToast('✅ Relief request submitted!', 'green');
+        }
+
+        function addHealthRecord(e) {
+            e.preventDefault();
+            closeModal('healthModal');
+            showToast('✅ Health record saved!', 'green');
+        }
+
+        function applyJob(title) {
+            closeModal('jobsModal');
+            showToast(`✅ Applied for ${title}`, 'purple');
+        }
+
+        function applyScholarship() {
+            closeModal('scholarshipModal');
+            showToast('✅ Scholarship application submitted!', 'yellow');
+        }
+
+        // Modal Helpers
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function closeModalOutside(e, id) {
+            if (e.target === document.getElementById(id)) closeModal(id);
+        }
+
+        function showToast(msg, color) {
+            const colors = { green: 'bg-green-600', purple: 'bg-purple-600', yellow: 'bg-yellow-500', blue: 'bg-blue-600', red: 'bg-red-600' };
+            const toast = document.createElement('div');
+            toast.className = `fixed top-16 left-1/2 -translate-x-1/2 ${colors[color] || 'bg-slate-800'} text-white text-sm px-4 py-2.5 rounded-full shadow-lg z-[200] transition-all`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2800);
+        }
+
+        function logoutResident() {
+            if (confirm('Logout from resident dashboard?')) {
+                window.location.reload();
+            }
+        }
+
+        // User Dropdown
+        document.getElementById('userMenuBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('userDropdown').classList.toggle('hidden');
+        });
+        document.addEventListener('click', function() {
+            document.getElementById('userDropdown').classList.add('hidden');
+        });
+
+        // Initialize
+        renderFeed();
+    </script>
+</body>
+</html>

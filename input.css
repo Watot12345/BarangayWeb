@@ -1,0 +1,109 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Custom base styles */
+@layer base {
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* Responsive text improvements */
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 1.5rem !important;
+    }
+    h2 {
+      font-size: 1.75rem !important;
+    }
+    h3 {
+      font-size: 1.125rem !important;
+    }
+    p {
+      font-size: 0.95rem;
+    }
+  }
+}
+
+/* Custom components */
+@layer components {
+  .navbar {
+    background-color: #1e40af;
+  }
+
+  .btn-primary {
+    background-color: #1e40af;
+    transition: all 0.3s;
+  }
+  .btn-primary:hover {
+    background-color: #1e3a8a;
+    transform: translateY(-2px);
+  }
+
+  .stat-card {
+    transition: transform 0.3s;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .service-card {
+    border-left: 4px solid #1e40af;
+    transition: all 0.3s;
+  }
+  .service-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+
+  /* Mobile Menu */
+  .mobile-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .mobile-menu.open {
+    max-height: 500px;
+  }
+
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  .hamburger span {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 5px 0;
+    transition: 0.3s;
+    border-radius: 2px;
+  }
+  .hamburger.open span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+  }
+  .hamburger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .hamburger {
+      display: flex;
+    }
+    .navbar-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #1e3a8a;
+      width: 100%;
+    }
+  }
+}
+
+/* Custom utilities (if needed) */
+@layer utilities {
+  /* Add any custom utility classes here */
+}
