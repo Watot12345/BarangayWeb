@@ -1135,8 +1135,8 @@
 <button onclick="toggleAIAssistant()" class="ai-float-btn group z-50 cursor-pointer bg-transparent border-0 p-0">
     <div class="relative">
         <div class="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-25"></div>
-        <div class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110 flex items-center justify-center">
-            <i class="fas fa-robot text-2xl"></i>
+        <div class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110 flex items-center justify-center overflow-hidden">
+            <img src="1.png" class="w-10 h-10 rounded-full object-cover" alt="AI Assistant">
         </div>
         <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
     </div>
@@ -1149,7 +1149,7 @@
 <div id="aiAssistant" class="fixed bottom-24 right-6 w-80 bg-white shadow-2xl rounded-xl flex flex-col overflow-hidden" style="display:none; z-index:9999;">
     <div class="bg-blue-600 text-white p-3 flex justify-between items-center rounded-t-xl">
         <span class="font-semibold flex items-center gap-2">
-            <i class="fas fa-robot"></i> AI Assistant
+            <img src="1.png" class="w-10 h-10 rounded-full object-cover" alt="AI Assistant"> Hi! I'm Servi!
         </span>
         <button onclick="closeAIAssistant()" class="hover:bg-blue-700 rounded-full w-7 h-7 flex items-center justify-center transition">✖</button>
     </div>
@@ -1163,6 +1163,7 @@
         </button>
     </div>
 </div>
+
 
 <script src="index.js"></script>
 </body>
