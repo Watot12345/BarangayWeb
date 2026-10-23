@@ -32,6 +32,14 @@ COPY . .
 # Install production dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Pre-create directories, sqlite file, and grant permissions
+RUN mkdir -p database storage bootstrap/cache \
+    && touch database/database.sqlite \
+    && chown -R www-data:www-data storage bootstrap/cache database \
+    && chmod -R 775 storage bootstrap/cache database \
+    && chmod 666 database/database.sqlite \
+    && chmod +x docker/entrypoint.sh
+
 EXPOSE 8000
 
 ENTRYPOINT ["docker/entrypoint.sh"]

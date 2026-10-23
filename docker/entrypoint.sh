@@ -1,29 +1,52 @@
 #!/bin/sh
 set -e
 
-# Ensure SQLite database file exists if using sqlite
-if [ "$DB_CONNECTION" = "sqlite" ] || [ -z "$DB_CONNECTION" ]; then
-    mkdir -p /var/www/html/database
-    touch /var/www/html/database/database.sqlite
+echo "==> Starting Barangay San Agustin Application..."
+
+# 1. Fallback for APP_KEY if not configured in host environment
+if [ -z "$APP_KEY" ]; then
+    echo "==> APP_KEY not provided, setting fallback application key..."
+    export APP_KEY="base64:xKa28hCNNeiry9tH7PRrmiK+qtVbxjPkLQ/+VmnWYLo="
 fi
 
-# Ensure storage directory permissions
+# 2. Default SQLite database setup
+export DB_CONNECTION="${DB_CONNECTION:-sqlite}"
+export DB_DATABASE="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
+export LOG_CHANNEL="${LOG_CHANNEL:-stderr}"
+export SESSION_DRIVER="${SESSION_DRIVER:-file}"
+export CACHE_STORE="${CACHE_STORE:-file}"
+
+if [ "$DB_CONNECTION" = "sqlite" ]; then
+    mkdir -p /var/www/html/database
+    if [ ! -f "$DB_DATABASE" ]; then
+        touch "$DB_DATABASE"
+    fi
+fi
+
+# 3. Run database migrations & seeders
+echo "==> Running database migrations..."
+php artisan migrate --force --no-interaction || true
+
+echo "==> Running database seeders..."
+php artisan db:seed --force --no-interaction || true
+
+# 4. Cache config and routes
+php artisan config:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+
+# 5. Ensure full read/write permissions for web server (www-data)
+echo "==> Setting directory permissions..."
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
-
-# Cache config & routes for production if APP_KEY is present
-if [ -n "$APP_KEY" ]; then
-    php artisan config:cache || true
-    php artisan route:cache || true
-    php artisan view:cache || true
+if [ -f "$DB_DATABASE" ]; then
+    chmod 666 "$DB_DATABASE"
 fi
 
-# Run migrations & seeders gracefully
-php artisan migrate --force || true
-php artisan db:seed --force || true
-
-# Bind Apache to PORT provided by host (e.g. Render / Koyeb uses $PORT, default 8000)
+# 6. Configure Apache PORT (Render passes $PORT, default 8000)
 PORT="${PORT:-8000}"
+echo "==> Binding Apache to port ${PORT}..."
 sed -i "s/80/${PORT}/g" /etc/apache2/ports.conf /etc/apache2/sites-available/*.conf
 
+echo "==> Barangay San Agustin ready! Launching Apache..."
 exec apache2-foreground

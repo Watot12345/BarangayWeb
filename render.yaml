@@ -13,7 +13,7 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: APP_KEY
-        generateValue: true
+        value: base64:xKa28hCNNeiry9tH7PRrmiK+qtVbxjPkLQ/+VmnWYLo=
       - key: DB_CONNECTION
         value: sqlite
       - key: SESSION_DRIVER
@@ -22,6 +22,8 @@ services:
         value: file
       - key: QUEUE_CONNECTION
         value: sync
+      - key: LOG_CHANNEL
+        value: stderr
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
