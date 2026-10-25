@@ -7,6 +7,11 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>@yield('title', config('app.name', 'Barangay San Agustin - Community Hub'))</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="{{ asset('1.jpg') }}">
+    <link rel="shortcut icon" type="image/jpeg" href="{{ asset('1.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('1.jpg') }}">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -212,7 +217,33 @@
             transition: all 0.2s ease !important;
         }
 
+        /* Card Gradient Guaranteed Classes */
+        .card-gradient-amber {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+        }
+        .card-gradient-blue {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%) !important;
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
+        }
+        .card-gradient-green {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            background-color: #059669 !important;
+            color: #ffffff !important;
+        }
+        .card-gradient-red {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+        }
+
         /* Fallbacks for Tailwind gradient classes to prevent collision transparent backgrounds */
+        .bg-gradient-to-r.from-amber-500.to-yellow-600 {
+            background: linear-gradient(to right, #d97706, #ca8a04) !important;
+            color: #ffffff !important;
+        }
         .bg-gradient-to-r.from-blue-600.to-blue-800 {
             background: linear-gradient(to right, #2563eb, #1e40af) !important;
             color: #ffffff !important;
@@ -227,6 +258,7 @@
         }
         .welcome-gradient {
             background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%) !important;
+            color: #ffffff !important;
         }
 
         /* Toast notifications */
