@@ -2340,53 +2340,74 @@
         const infoLabel = document.getElementById(formPrefix + 'MediaInfo');
         const statusLabel = document.getElementById(formPrefix + 'MediaStatus');
 
-        if (file.type.startsWith('image/')) {
-            if (statusLabel) statusLabel.textContent = 'Optimizing image...';
+        const isImg = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|bmp|heic|heif)$/i.test(file.name || '');
+        const isVid = file.type.startsWith('video/') || /\.(mp4|mov|webm|ogg|mkv|3gp)$/i.test(file.name || '');
+
+        if (isImg) {
             mediaTypes[formPrefix] = 'image';
+            mediaBlobs[formPrefix] = file; // Immediate baseline fallback
+
+            const origSizeKB = Math.round(file.size / 1024);
+            if (statusLabel) statusLabel.textContent = 'Optimizing image...';
 
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const img = new Image();
                 img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxDim = 1280;
+                    try {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 1280;
 
-                    if (width > maxDim || height > maxDim) {
-                        if (width > height) {
-                            height = Math.round((height * maxDim) / width);
-                            width = maxDim;
-                        } else {
-                            width = Math.round((width * maxDim) / height);
-                            height = maxDim;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
                         }
-                    }
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
 
-                    canvas.toBlob(function(blob) {
-                        mediaBlobs[formPrefix] = blob;
-                        const origSizeKB = Math.round(file.size / 1024);
-                        const compSizeKB = Math.round(blob.size / 1024);
-
+                        canvas.toBlob(function(blob) {
+                            if (blob) {
+                                mediaBlobs[formPrefix] = blob;
+                                const compSizeKB = Math.round(blob.size / 1024);
+                                if (previewContent) {
+                                    previewContent.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="max-h-52 rounded object-contain mx-auto" />`;
+                                }
+                                if (infoLabel) {
+                                    infoLabel.innerHTML = `<span class="text-emerald-700 font-semibold">Compressed: ${compSizeKB} KB</span> <span class="text-slate-400 line-through">(${origSizeKB} KB)</span>`;
+                                }
+                            }
+                            if (previewBox) previewBox.classList.remove('hidden');
+                            if (statusLabel) statusLabel.textContent = 'Photo ready to share';
+                        }, 'image/jpeg', 0.82);
+                    } catch (err) {
                         if (previewContent) {
-                            previewContent.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="max-h-52 rounded object-contain mx-auto" />`;
-                        }
-                        if (infoLabel) {
-                            infoLabel.innerHTML = `<span class="text-emerald-700 font-semibold">Compressed: ${compSizeKB} KB</span> <span class="text-slate-400 line-through">(${origSizeKB} KB)</span>`;
+                            previewContent.innerHTML = `<img src="${evt.target.result}" class="max-h-52 rounded object-contain mx-auto" />`;
                         }
                         if (previewBox) previewBox.classList.remove('hidden');
-                        if (statusLabel) statusLabel.textContent = 'Image compressed & ready';
-                    }, 'image/jpeg', 0.82);
+                        if (statusLabel) statusLabel.textContent = 'Photo ready';
+                    }
+                };
+                img.onerror = function() {
+                    if (previewContent) {
+                        previewContent.innerHTML = `<div class="p-4 text-center text-slate-500"><i class="fas fa-file-image text-3xl mb-1 text-blue-900"></i><p class="text-xs font-semibold">${file.name}</p></div>`;
+                    }
+                    if (previewBox) previewBox.classList.remove('hidden');
+                    if (statusLabel) statusLabel.textContent = 'Image attached';
                 };
                 img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
-        } else if (file.type.startsWith('video/')) {
+        } else if (isVid) {
             const sizeMB = file.size / (1024 * 1024);
             if (sizeMB > 15) {
                 alert(`Selected video is too large (${sizeMB.toFixed(1)}MB). Please select a video under 15MB (e.g. under 60 seconds) to ensure quick mobile delivery.`);

@@ -17,6 +17,29 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok', 'timestamp' => now()->toIso8601String()]);
 });
 
+// Resilient media file delivery fallback (handles uploads whether in public/uploads or storage/app/public)
+Route::get('/uploads/posts/{filename}', function ($filename) {
+    $path = public_path('uploads/posts/' . $filename);
+    if (!file_exists($path)) {
+        $path = storage_path('app/public/posts/' . $filename);
+    }
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+});
+
+Route::get('/storage/posts/{filename}', function ($filename) {
+    $path = storage_path('app/public/posts/' . $filename);
+    if (!file_exists($path)) {
+        $path = public_path('uploads/posts/' . $filename);
+    }
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+});
+
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

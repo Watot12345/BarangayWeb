@@ -30,14 +30,22 @@ php artisan migrate --force --no-interaction || true
 echo "==> Running database seeders..."
 php artisan db:seed --force --no-interaction || true
 
-# 4. Cache config and routes
+# 4. Configure PHP upload limits (50M)
+echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini || true
+echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/uploads.ini || true
+echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini || true
+
+# 5. Connect storage symlink and clear caches
+php artisan storage:link --force || true
 php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
-# 5. Ensure full read/write permissions for web server (www-data)
+# 6. Ensure full read/write permissions for web server (www-data)
 echo "==> Setting directory permissions..."
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+mkdir -p /var/www/html/public/uploads/posts /var/www/html/storage/app/public/posts
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database /var/www/html/public/uploads
+chmod -R 777 /var/www/html/public/uploads /var/www/html/storage/app/public
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 if [ -f "$DB_DATABASE" ]; then
     chmod 666 "$DB_DATABASE"

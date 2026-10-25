@@ -33,11 +33,13 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Pre-create directories, sqlite file, and grant permissions
-RUN mkdir -p database storage bootstrap/cache \
+RUN mkdir -p database storage bootstrap/cache public/uploads/posts storage/app/public/posts \
     && touch database/database.sqlite \
-    && chown -R www-data:www-data storage bootstrap/cache database \
+    && chown -R www-data:www-data storage bootstrap/cache database public/uploads \
+    && chmod -R 777 public/uploads storage/app/public \
     && chmod -R 775 storage bootstrap/cache database \
     && chmod 666 database/database.sqlite \
+    && echo "upload_max_filesize = 50M\npost_max_size = 50M\nmemory_limit = 256M" > /usr/local/etc/php/conf.d/uploads.ini \
     && chmod +x docker/entrypoint.sh
 
 EXPOSE 8000

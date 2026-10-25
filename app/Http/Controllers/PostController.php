@@ -17,6 +17,9 @@ class PostController extends Controller
             'type' => ['nullable', 'string'],
             'visibility' => ['nullable', 'string', 'max:50'],
             'media' => ['nullable', 'file', 'max:15360'],
+        ], [
+            'media.max' => 'The uploaded file exceeds the 15MB limit. Please choose a smaller photo or short video clip.',
+            'media.file' => 'The uploaded media could not be processed. Please check file format and size.',
         ]);
 
         // Require at least content or an attached media file
@@ -48,9 +51,19 @@ class PostController extends Controller
                 ], 422);
             }
 
+            // Target storage directory with fail-safe fallback
             $uploadDir = public_path('uploads/posts');
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+            $useStorage = false;
+
+            if (!is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0777, true);
+            }
+            if (!is_writable($uploadDir)) {
+                $uploadDir = storage_path('app/public/posts');
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                $useStorage = true;
             }
 
             if ($isImage) {
@@ -58,13 +71,13 @@ class PostController extends Controller
                 $filename = 'img_' . uniqid() . '_' . time() . '.webp';
                 $targetPath = $uploadDir . '/' . $filename;
                 $this->compressAndSaveImage($file, $targetPath);
-                $mediaUrl = asset('uploads/posts/' . $filename);
+                $mediaUrl = $useStorage ? asset('storage/posts/' . $filename) : asset('uploads/posts/' . $filename);
             } else {
                 $mediaType = 'video';
                 $safeExt = in_array($ext, $videoExts) ? $ext : 'mp4';
                 $filename = 'vid_' . uniqid() . '_' . time() . '.' . $safeExt;
                 $file->move($uploadDir, $filename);
-                $mediaUrl = asset('uploads/posts/' . $filename);
+                $mediaUrl = $useStorage ? asset('storage/posts/' . $filename) : asset('uploads/posts/' . $filename);
             }
         }
 
@@ -114,46 +127,53 @@ class PostController extends Controller
      */
     protected function compressAndSaveImage($file, string $targetPath): void
     {
-        $mime = $file->getMimeType();
-        $source = null;
+        try {
+            $mime = (string)($file->getMimeType() ?: '');
+            $source = null;
 
-        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
-            $source = @imagecreatefromjpeg($file->getRealPath());
-        } elseif ($mime === 'image/png') {
-            $source = @imagecreatefrompng($file->getRealPath());
-        } elseif ($mime === 'image/webp') {
-            $source = @imagecreatefromwebp($file->getRealPath());
-        }
+            if (extension_loaded('gd')) {
+                if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+                    $source = @imagecreatefromjpeg($file->getRealPath());
+                } elseif ($mime === 'image/png') {
+                    $source = @imagecreatefrompng($file->getRealPath());
+                } elseif ($mime === 'image/webp') {
+                    $source = @imagecreatefromwebp($file->getRealPath());
+                }
+            }
 
-        if ($source) {
-            $origWidth = imagesx($source);
-            $origHeight = imagesy($source);
-            $maxDimension = 1280;
+            if ($source) {
+                $origWidth = imagesx($source);
+                $origHeight = imagesy($source);
+                $maxDimension = 1280;
 
-            if ($origWidth > $maxDimension || $origHeight > $maxDimension) {
-                $ratio = min($maxDimension / $origWidth, $maxDimension / $origHeight);
-                $newWidth = (int)($origWidth * $ratio);
-                $newHeight = (int)($origHeight * $ratio);
-                $canvas = imagecreatetruecolor($newWidth, $newHeight);
+                if ($origWidth > $maxDimension || $origHeight > $maxDimension) {
+                    $ratio = min($maxDimension / $origWidth, $maxDimension / $origHeight);
+                    $newWidth = (int)($origWidth * $ratio);
+                    $newHeight = (int)($origHeight * $ratio);
+                    $canvas = imagecreatetruecolor($newWidth, $newHeight);
 
-                // Preserve alpha for transparent images
-                imagealphablending($canvas, false);
-                imagesavealpha($canvas, true);
+                    // Preserve alpha for transparent images
+                    imagealphablending($canvas, false);
+                    imagesavealpha($canvas, true);
 
-                imagecopyresampled($canvas, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+                    imagecopyresampled($canvas, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+                    imagedestroy($source);
+                    $source = $canvas;
+                }
+
+                if (function_exists('imagewebp')) {
+                    imagewebp($source, $targetPath, 80);
+                } else {
+                    imagejpeg($source, $targetPath, 80);
+                }
                 imagedestroy($source);
-                $source = $canvas;
+                return;
             }
-
-            if (function_exists('imagewebp')) {
-                imagewebp($source, $targetPath, 80);
-            } else {
-                imagejpeg($source, $targetPath, 80);
-            }
-            imagedestroy($source);
-        } else {
-            $file->move(dirname($targetPath), basename($targetPath));
+        } catch (\Throwable $e) {
+            // Safe fallback to raw file move if GD processing encounters any issue
         }
+
+        $file->move(dirname($targetPath), basename($targetPath));
     }
 
     public function toggleLike(Post $post)
