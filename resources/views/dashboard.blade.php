@@ -91,8 +91,8 @@
                 <p class="text-xs font-bold text-slate-900 truncate">{{ $user->name }}</p>
                 <p class="text-[10px] text-blue-700 font-mono font-medium">{{ $user->barangay_id ?? 'BRGY-RESIDENT' }}</p>
                 <div class="flex items-center gap-1.5 mt-0.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[10px] text-slate-500 font-medium">Online Resident</span>
+                    <span class="w-1.5 h-1.5 rounded-full {{ $user->role === 'admin' ? 'bg-amber-500' : 'bg-emerald-500' }} animate-pulse"></span>
+                    <span class="text-[10px] text-slate-500 font-medium">{{ $user->role === 'admin' ? 'Barangay Staff / Admin' : 'Online Resident' }}</span>
                 </div>
             </div>
         </div>
@@ -224,7 +224,7 @@
                     <div class="relative z-10">
                         <div class="flex items-center justify-between">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white uppercase tracking-wider backdrop-blur-xs">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Verified Resident
+                                <span class="w-1.5 h-1.5 rounded-full {{ $user->role === 'admin' ? 'bg-amber-300' : 'bg-emerald-400' }} animate-pulse"></span> {{ $user->role === 'admin' ? 'Barangay Staff / Administrator' : 'Verified Resident' }}
                             </span>
                             <span class="text-xs text-blue-100 font-mono">{{ $user->barangay_id ?? 'BRGY-001' }}</span>
                         </div>

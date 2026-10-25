@@ -610,8 +610,9 @@
                     </div>
                 </div>
 
-                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800 mb-4">
-                    <i class="fas fa-info-circle mr-1"></i> Demo resident login: <strong>maria@example.com</strong> / password: <strong>password</strong>
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800 mb-4 leading-relaxed">
+                    <p><i class="fas fa-info-circle mr-1"></i> <strong>Resident:</strong> maria@example.com / password</p>
+                    <p class="mt-0.5"><i class="fas fa-shield-alt mr-1"></i> <strong>Staff / Admin:</strong> admin@sjdm.gov.ph / admin123</p>
                 </div>
                 
                 <button type="submit" id="loginSubmitBtn" class="btn-submit-blue w-full py-3.5 px-6 rounded-xl text-white font-bold flex items-center justify-center cursor-pointer">
