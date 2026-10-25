@@ -28,8 +28,9 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
 // AI Assistant chat endpoint
 Route::post('/ai/chat', [AiChatController::class, 'chat'])->name('ai.chat');
 
-// Public Document request submission
+// Public Document & Recruiter registration submissions
 Route::post('/services/request', [ServiceController::class, 'requestDocument'])->name('services.request');
+Route::post('/recruiters/register', [ServiceController::class, 'registerRecruiter'])->name('recruiters.register');
 
 // Authenticated resident portal
 Route::middleware('auth')->group(function () {
@@ -52,4 +53,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/jobs/{id}/status', [AdminController::class, 'updateJobApplicationStatus'])->name('admin.jobs.status');
     Route::post('/admin/scholarships/{id}/status', [AdminController::class, 'updateScholarshipStatus'])->name('admin.scholarships.status');
     Route::post('/admin/broadcast', [AdminController::class, 'broadcastAnnouncement'])->name('admin.broadcast');
+
+    // Admin Job Recruiters & Job Openings Management
+    Route::post('/admin/recruiters', [AdminController::class, 'storeRecruiter'])->name('admin.recruiters.store');
+    Route::post('/admin/recruiters/{id}/status', [AdminController::class, 'updateRecruiterStatus'])->name('admin.recruiters.status');
+    Route::post('/admin/jobs/openings', [AdminController::class, 'storeJobOpening'])->name('admin.jobs.openings.store');
+    Route::post('/admin/jobs/openings/{id}/status', [AdminController::class, 'updateJobOpeningStatus'])->name('admin.jobs.openings.status');
+    Route::delete('/admin/jobs/openings/{id}', [AdminController::class, 'deleteJobOpening'])->name('admin.jobs.openings.delete');
+
+    // Staff Registry & User Management
+    Route::post('/admin/users', [AdminController::class, 'storeStaff'])->name('admin.users.store');
+    Route::post('/admin/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.role');
+    Route::post('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggleStatus');
+    Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetUserPassword'])->name('admin.users.resetPassword');
 });

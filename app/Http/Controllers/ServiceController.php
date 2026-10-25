@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ReliefRequest;
 use App\Models\HealthRecord;
 use App\Models\JobApplication;
+use App\Models\JobOpening;
+use App\Models\JobRecruiter;
 use App\Models\ScholarshipApplication;
 use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
@@ -57,18 +59,54 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'job_title' => ['required', 'string', 'max:150'],
+            'job_opening_id' => ['nullable', 'integer', 'exists:job_openings,id'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $application = JobApplication::create([
             'user_id' => Auth::id(),
+            'job_opening_id' => $validated['job_opening_id'] ?? null,
             'job_title' => $validated['job_title'],
+            'notes' => $validated['notes'] ?? null,
             'status' => 'Submitted',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Application for "' . $validated['job_title'] . '" submitted successfully! The Barangay PESO desk will contact you.',
+            'message' => 'Application for "' . $validated['job_title'] . '" submitted successfully! The Barangay PESO desk and employer have been notified.',
             'application' => $application,
+        ]);
+    }
+
+    public function registerRecruiter(Request $request)
+    {
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'max:200'],
+            'contact_person' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:150'],
+            'phone' => ['required', 'string', 'max:50'],
+            'permit_number' => ['nullable', 'string', 'max:100'],
+            'industry' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string', 'max:300'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $recruiter = JobRecruiter::create([
+            'company_name' => $validated['company_name'],
+            'contact_person' => $validated['contact_person'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'permit_number' => $validated['permit_number'] ?? null,
+            'industry' => $validated['industry'] ?? 'General Services',
+            'address' => $validated['address'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'status' => 'Pending',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Accreditation application for "' . $validated['company_name'] . '" submitted! Barangay San Agustin PESO desk will verify your documents.',
+            'recruiter' => $recruiter,
         ]);
     }
 

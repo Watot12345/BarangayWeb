@@ -301,11 +301,16 @@
                             <i class="fas fa-briefcase text-purple-600 text-xl"></i>
                         </div>
                         <h3 class="text-lg font-bold text-purple-800 mb-2">Job Matching</h3>
-                        <p class="text-gray-600 text-sm mb-3">Connect local employers with qualified job seekers</p>
+                        <p class="text-gray-600 text-sm mb-3">Connect local employers with qualified job seekers in San Agustin</p>
                     </div>
-                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">12 openings</span>
-                        <a href="javascript:void(0)" onclick="@auth window.location='{{ route('dashboard') }}' @else openRegisterModal() @endauth" class="text-purple-700 text-sm font-semibold hover:text-purple-900 cursor-pointer">Apply <i class="fas fa-arrow-right ml-1 text-xs"></i></a>
+                    <div class="space-y-2 pt-3 border-t border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Local Hiring</span>
+                            <a href="javascript:void(0)" onclick="@auth window.location='{{ route('dashboard') }}' @else openRegisterModal() @endauth" class="text-purple-700 text-sm font-semibold hover:text-purple-900 cursor-pointer">View Jobs <i class="fas fa-arrow-right ml-1 text-xs"></i></a>
+                        </div>
+                        <button type="button" onclick="openRecruiterModal()" class="w-full text-center text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 py-1.5 rounded-lg border border-blue-200 transition cursor-pointer">
+                            <i class="fas fa-building mr-1"></i> Register as Recruiter / Partner
+                        </button>
                     </div>
                 </div>
                 
@@ -744,6 +749,62 @@
         </div>
     </div>
 
+    <!-- Recruiter & Employer Accreditation Modal -->
+    <div id="recruiterModal" class="modal-overlay">
+        <div class="modal-content max-w-lg bg-white rounded-2xl overflow-hidden shadow-2xl">
+            <div class="modal-header-blue p-4 flex justify-between items-center">
+                <h3 class="font-bold text-base text-white flex items-center gap-2">
+                    <i class="fas fa-building text-sm"></i> Recruiter & Employer Accreditation Form
+                </h3>
+                <button type="button" onclick="closeRecruiterModal()" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <form id="recruiterForm" onsubmit="handleRecruiterFormSubmit(event)" class="p-5 space-y-3.5 text-xs text-left">
+                @csrf
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-1">Company / Business Name *</label>
+                    <input type="text" id="homeRecruiterCompanyName" required placeholder="e.g. Robinsons Retail / Apex Logistics" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Contact Person / HR *</label>
+                        <input type="text" id="homeRecruiterContactPerson" required placeholder="e.g. Claire Mendoza" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Industry Type *</label>
+                        <input type="text" id="homeRecruiterIndustry" required placeholder="e.g. Retail, Security, Logistics" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Official Email Address *</label>
+                        <input type="email" id="homeRecruiterEmail" required placeholder="e.g. hr@company.ph" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Phone Number *</label>
+                        <input type="text" id="homeRecruiterPhone" required placeholder="e.g. 0917-123-4567" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Business Permit / DTI / SEC #</label>
+                        <input type="text" id="homeRecruiterPermit" placeholder="e.g. BP-SJDM-2026-09" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1">Office / Worksite Address</label>
+                        <input type="text" id="homeRecruiterAddress" placeholder="e.g. San Jose del Monte, Bulacan" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-1">Hiring Needs & Job Openings</label>
+                    <textarea id="homeRecruiterDescription" rows="2" placeholder="List the job positions you are looking to hire residents for..." class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:outline-none"></textarea>
+                </div>
+                <button type="submit" class="btn-submit-blue w-full py-2.5 rounded-xl font-bold text-white transition cursor-pointer">
+                    Submit Accreditation Form to Barangay PESO
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- AI ASSISTANT FLOATING BUTTON -->
     <button onclick="toggleAIAssistant()" class="ai-float-btn group z-50 cursor-pointer bg-transparent border-0 p-0">
         <div class="relative">
@@ -822,6 +883,45 @@
         document.getElementById('serviceRequestModal').classList.add('active');
     }
     function closeServiceRequestModal() { document.getElementById('serviceRequestModal').classList.remove('active'); }
+
+    function openRecruiterModal() { document.getElementById('recruiterModal').classList.add('active'); }
+    function closeRecruiterModal() { document.getElementById('recruiterModal').classList.remove('active'); }
+
+    async function handleRecruiterFormSubmit(e) {
+        e.preventDefault();
+        const payload = {
+            company_name: document.getElementById('homeRecruiterCompanyName').value.trim(),
+            contact_person: document.getElementById('homeRecruiterContactPerson').value.trim(),
+            industry: document.getElementById('homeRecruiterIndustry').value.trim(),
+            email: document.getElementById('homeRecruiterEmail').value.trim(),
+            phone: document.getElementById('homeRecruiterPhone').value.trim(),
+            permit_number: document.getElementById('homeRecruiterPermit').value.trim(),
+            address: document.getElementById('homeRecruiterAddress').value.trim(),
+            description: document.getElementById('homeRecruiterDescription').value.trim(),
+        };
+
+        try {
+            const res = await fetch("{{ route('recruiters.register') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message || 'Recruiter accreditation application submitted successfully! Barangay PESO desk will contact you.');
+                document.getElementById('recruiterForm').reset();
+                closeRecruiterModal();
+            } else {
+                alert(data.message || 'Error submitting application.');
+            }
+        } catch (err) {
+            alert('Unable to submit recruiter form right now. Please try again or visit Barangay Hall.');
+        }
+    }
 
     // AI Assistant Widget
     function toggleAIAssistant() {

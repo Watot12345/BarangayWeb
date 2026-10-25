@@ -186,4 +186,94 @@ class BarangayTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    public function test_public_recruiter_can_submit_registration()
+    {
+        $response = $this->postJson('/recruiters/register', [
+            'company_name' => 'Metro Express Logistics',
+            'contact_person' => 'David Tan',
+            'email' => 'david@metroexpress.ph',
+            'phone' => '0917-222-3344',
+            'industry' => 'Logistics & Warehousing',
+            'description' => 'Delivery rider and warehouse clerk recruitment.',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertDatabaseHas('job_recruiters', [
+            'company_name' => 'Metro Express Logistics',
+            'status' => 'Pending',
+        ]);
+    }
+
+    public function test_staff_can_post_job_opening()
+    {
+        $staff = User::create([
+            'barangay_id' => 'STAFF-100',
+            'name' => 'PESO Officer Jose',
+            'email' => 'jose.staff@sjdm.gov.ph',
+            'role' => 'staff',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $response = $this->actingAs($staff)->postJson('/admin/jobs/openings', [
+            'title' => 'Warehouse Package Sorter',
+            'company_name' => 'Apex Logistics SJDM',
+            'employment_type' => 'Full-time',
+            'salary_range' => '₱18,000 / month',
+            'location' => 'San Agustin Industrial Park',
+            'vacancies' => 4,
+            'description' => 'Sort and organize parcel deliveries for local distribution.',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertDatabaseHas('job_openings', [
+            'title' => 'Warehouse Package Sorter',
+            'status' => 'Open',
+        ]);
+    }
+
+    public function test_superadmin_can_manage_staff_registry()
+    {
+        $admin = User::create([
+            'barangay_id' => 'ADMIN-999',
+            'name' => 'Head Administrator',
+            'email' => 'headadmin@sjdm.gov.ph',
+            'role' => 'admin',
+            'password' => bcrypt('admin123'),
+        ]);
+
+        // 1. Create new staff member
+        $createResponse = $this->actingAs($admin)->postJson('/admin/users', [
+            'name' => 'New Desk Officer',
+            'email' => 'desk@sjdm.gov.ph',
+            'barangay_id' => 'STAFF-999',
+            'role' => 'staff',
+            'designation' => 'Public Assistance Desk',
+            'password' => 'secret123',
+        ]);
+
+        $createResponse->assertStatus(200);
+        $createResponse->assertJson(['success' => true]);
+        $this->assertDatabaseHas('users', [
+            'email' => 'desk@sjdm.gov.ph',
+            'role' => 'staff',
+            'designation' => 'Public Assistance Desk',
+        ]);
+
+        $newStaff = User::where('email', 'desk@sjdm.gov.ph')->first();
+
+        // 2. Toggle active status
+        $toggleResponse = $this->actingAs($admin)->postJson("/admin/users/{$newStaff->id}/toggle-status");
+        $toggleResponse->assertStatus(200);
+        $this->assertFalse($newStaff->fresh()->is_active);
+
+        // 3. Reset password
+        $resetResponse = $this->actingAs($admin)->postJson("/admin/users/{$newStaff->id}/reset-password", [
+            'password' => 'newpassword456',
+        ]);
+        $resetResponse->assertStatus(200);
+        $resetResponse->assertJson(['success' => true]);
+    }
 }

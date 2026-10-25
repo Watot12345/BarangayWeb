@@ -8,6 +8,9 @@ use App\Models\Comment;
 use App\Models\PostLike;
 use App\Models\HealthRecord;
 use App\Models\JobApplication;
+use App\Models\JobRecruiter;
+use App\Models\JobOpening;
+use App\Models\ScholarshipApplication;
 use App\Models\ReliefRequest;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -35,19 +38,55 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Barangay Admin
+        // 2. Barangay Admin & Staff Registry
         $admin = User::updateOrCreate(
             ['email' => 'admin@sjdm.gov.ph'],
             [
-                'name' => 'Barangay Admin',
+                'name' => 'Barangay Captain / Admin',
                 'password' => Hash::make('admin123'),
-                'barangay_id' => 'BRGY-0001',
+                'barangay_id' => 'ADMIN-0001',
                 'phone' => '0918-987-6543',
                 'birthdate' => '1985-01-01',
-                'gender' => 'Other',
-                'civil_status' => 'Single',
+                'gender' => 'Male',
+                'civil_status' => 'Married',
                 'address' => 'Barangay Hall, San Agustin',
                 'role' => 'admin',
+                'designation' => 'Barangay Captain & Administrator',
+                'is_active' => true,
+            ]
+        );
+
+        $staffPeso = User::updateOrCreate(
+            ['email' => 'peso.officer@sjdm.gov.ph'],
+            [
+                'name' => 'Jose Ramirez',
+                'password' => Hash::make('staff123'),
+                'barangay_id' => 'STAFF-0002',
+                'phone' => '0917-888-2233',
+                'birthdate' => '1988-04-12',
+                'gender' => 'Male',
+                'civil_status' => 'Single',
+                'address' => 'Purok 2, San Agustin',
+                'role' => 'staff',
+                'designation' => 'PESO Officer & Recruiter Liaison',
+                'is_active' => true,
+            ]
+        );
+
+        $staffHealth = User::updateOrCreate(
+            ['email' => 'health.desk@sjdm.gov.ph'],
+            [
+                'name' => 'Elena Bautista, RN',
+                'password' => Hash::make('staff123'),
+                'barangay_id' => 'STAFF-0003',
+                'phone' => '0922-999-4455',
+                'birthdate' => '1992-09-23',
+                'gender' => 'Female',
+                'civil_status' => 'Single',
+                'address' => 'Purok 4, San Agustin',
+                'role' => 'staff',
+                'designation' => 'Clinic & Health Desk Coordinator',
+                'is_active' => true,
             ]
         );
 
@@ -178,14 +217,119 @@ class DatabaseSeeder extends Seeder
             'status' => 'Ready for Pick-up',
         ]);
 
-        // 10. Sample Job Applications
+        // 10. Sample Job Recruiters
+        $recruiter1 = JobRecruiter::firstOrCreate(
+            ['email' => 'careers@robinsonssjdm.ph'],
+            [
+                'company_name' => 'Robinsons Supermarket SJDM',
+                'contact_person' => 'Claire Mendoza (HR Manager)',
+                'phone' => '0917-555-1200',
+                'permit_number' => 'BP-SJDM-2026-0881',
+                'industry' => 'Retail & Consumer Goods',
+                'address' => 'Quirino Highway, San Jose del Monte, Bulacan',
+                'description' => 'Official retail partner of Barangay San Agustin providing priority local employment.',
+                'status' => 'Approved',
+                'verified_at' => now(),
+            ]
+        );
+
+        $recruiter2 = JobRecruiter::firstOrCreate(
+            ['email' => 'operations@sanagustinsecurity.ph'],
+            [
+                'company_name' => 'San Agustin Security & Protection Services',
+                'contact_person' => 'Col. Eduardo Ramos',
+                'phone' => '0928-333-7744',
+                'permit_number' => 'SEC-CS2019-4401',
+                'industry' => 'Security & Public Safety',
+                'address' => 'Purok 3, Barangay San Agustin, SJDM',
+                'description' => 'Licensed security agency providing industrial and residential security personnel.',
+                'status' => 'Approved',
+                'verified_at' => now(),
+            ]
+        );
+
+        $recruiter3 = JobRecruiter::firstOrCreate(
+            ['email' => 'hr@apexsolutionsbulacan.com'],
+            [
+                'company_name' => 'Apex BPO & Digital Solutions',
+                'contact_person' => 'Mark Villafuerte',
+                'phone' => '0919-444-9988',
+                'permit_number' => 'DTI-04829103',
+                'industry' => 'Information Technology & BPO',
+                'address' => 'City Center Tower, SJDM',
+                'description' => 'Call center and tech support outsourcing center expanding in Bulacan.',
+                'status' => 'Pending',
+                'verified_at' => null,
+            ]
+        );
+
+        // 11. Sample Job Openings
+        $opening1 = JobOpening::firstOrCreate(
+            ['title' => 'Barangay Auxiliary Tanod / Security Guard'],
+            [
+                'job_recruiter_id' => $recruiter2->id,
+                'posted_by_user_id' => $admin->id,
+                'company_name' => 'San Agustin Security & Protection Services',
+                'employment_type' => 'Full-time',
+                'salary_range' => '₱610 / day + Night Differential',
+                'location' => 'Barangay San Agustin Compound',
+                'vacancies' => 5,
+                'description' => 'Patrol designated puroks, assist in night curfew monitoring, and support community safety operations.',
+                'requirements' => 'Barangay resident, 21-45 years old, physically fit, high school graduate or equivalent.',
+                'status' => 'Open',
+            ]
+        );
+
+        $opening2 = JobOpening::firstOrCreate(
+            ['title' => 'Supermarket Cashier & Stock Clerk'],
+            [
+                'job_recruiter_id' => $recruiter1->id,
+                'posted_by_user_id' => $admin->id,
+                'company_name' => 'Robinsons Supermarket SJDM',
+                'employment_type' => 'Full-time',
+                'salary_range' => '₱16,500 - ₱18,500 / month',
+                'location' => 'Robinsons SJDM Branch (Near San Agustin)',
+                'vacancies' => 8,
+                'description' => 'Handle point-of-sale customer checkout, shelf restocking, customer assistance, and inventory tracking.',
+                'requirements' => 'High school / Senior high graduate, customer-friendly, basic math skills.',
+                'status' => 'Open',
+            ]
+        );
+
+        $opening3 = JobOpening::firstOrCreate(
+            ['title' => 'Community Health Aide (BHW)'],
+            [
+                'job_recruiter_id' => null,
+                'posted_by_user_id' => $admin->id,
+                'company_name' => 'Barangay San Agustin Health Center (PESO Desk)',
+                'employment_type' => 'Contractual',
+                'salary_range' => '₱14,000 / month + Honorarium',
+                'location' => 'Main Health Center, San Agustin',
+                'vacancies' => 2,
+                'description' => 'Assist barangay doctors and nurses with patient vitals recording, immunization records, and medicine dispatches.',
+                'requirements' => 'Resident of Barangay San Agustin, with basic medical/caregiver orientation.',
+                'status' => 'Open',
+            ]
+        );
+
+        // 12. Sample Job Applications
         JobApplication::create([
             'user_id' => $ana->id,
-            'job_title' => 'Community Health Worker (BHW)',
+            'job_opening_id' => $opening3->id,
+            'job_title' => 'Community Health Aide (BHW)',
             'status' => 'Submitted',
+            'notes' => 'Resident of Purok 2 with TESDA Caregiving NCII certification.',
         ]);
 
-        // 11. Sample Scholarship Application
+        JobApplication::create([
+            'user_id' => $john->id,
+            'job_opening_id' => $opening1->id,
+            'job_title' => 'Barangay Auxiliary Tanod / Security Guard',
+            'status' => 'Interview Scheduled',
+            'notes' => 'Active volunteer in Purok 4 with security guard license.',
+        ]);
+
+        // 13. Sample Scholarship Application
         ScholarshipApplication::create([
             'user_id' => $roberto->id,
             'status' => 'Submitted',

@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\ServiceRequest;
 use App\Models\ReliefRequest;
 use App\Models\JobApplication;
+use App\Models\JobOpening;
+use App\Models\JobRecruiter;
 use App\Models\ScholarshipApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,22 +61,34 @@ class DashboardController extends Controller
             'online_count' => 156,
         ];
 
-        // Gather Admin & Staff Management Data if user has 'admin' role
+        // Active job openings and accredited recruiters for resident view
+        $openJobs = JobOpening::with('recruiter')->where('status', 'Open')->latest()->get();
+        $approvedRecruiters = JobRecruiter::where('status', 'Approved')->latest()->get();
+
+        // Gather Admin & Staff Management Data if user has 'admin' or 'staff' role
         $adminData = null;
-        if ($user->role === 'admin') {
+        if (in_array($user->role, ['admin', 'staff'])) {
             $adminData = [
                 'stats' => [
                     'total_residents' => User::where('role', 'resident')->count(),
+                    'total_staff' => User::whereIn('role', ['admin', 'staff'])->count(),
                     'pending_documents' => ServiceRequest::where('status', 'Pending')->count(),
                     'pending_relief' => ReliefRequest::where('status', 'Pending')->count(),
                     'total_jobs' => JobApplication::count(),
+                    'total_openings' => JobOpening::where('status', 'Open')->count(),
+                    'total_recruiters' => JobRecruiter::where('status', 'Approved')->count(),
+                    'pending_recruiters' => JobRecruiter::where('status', 'Pending')->count(),
                     'total_scholarships' => ScholarshipApplication::count(),
                 ],
+                'staff_members' => User::whereIn('role', ['admin', 'staff'])->latest()->get(),
                 'service_requests' => ServiceRequest::with('user')->latest()->get(),
                 'relief_requests' => ReliefRequest::with('user')->latest()->get(),
-                'job_applications' => JobApplication::with('user')->latest()->get(),
+                'job_applications' => JobApplication::with(['user', 'jobOpening'])->latest()->get(),
+                'job_openings' => JobOpening::with(['recruiter', 'applications'])->latest()->get(),
+                'job_recruiters' => JobRecruiter::withCount('jobOpenings')->latest()->get(),
+                'approved_recruiters' => $approvedRecruiters,
                 'scholarship_applications' => ScholarshipApplication::with('user')->latest()->get(),
-                'residents' => User::where('role', 'resident')->latest()->take(50)->get(),
+                'residents' => User::where('role', 'resident')->latest()->take(100)->get(),
             ];
         }
 
@@ -82,10 +96,12 @@ class DashboardController extends Controller
             return response()->json([
                 'posts' => $posts,
                 'userStats' => $userStats,
+                'openJobs' => $openJobs,
+                'approvedRecruiters' => $approvedRecruiters,
                 'adminData' => $adminData,
             ]);
         }
 
-        return view('dashboard', compact('user', 'posts', 'userStats', 'tab', 'adminData'));
+        return view('dashboard', compact('user', 'posts', 'userStats', 'tab', 'openJobs', 'approvedRecruiters', 'adminData'));
     }
 }
