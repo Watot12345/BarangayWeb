@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class BarangayTest extends TestCase
@@ -275,5 +276,109 @@ class BarangayTest extends TestCase
         ]);
         $resetResponse->assertStatus(200);
         $resetResponse->assertJson(['success' => true]);
+    }
+
+    public function test_resident_can_create_post_with_image()
+    {
+        $user = User::create([
+            'barangay_id' => 'RES-101',
+            'name' => 'Maria Santos',
+            'email' => 'maria@example.com',
+            'role' => 'resident',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $image = UploadedFile::fake()->image('neighborhood_clean.jpg', 800, 600);
+
+        $response = $this->actingAs($user)->post('/posts', [
+            'content' => 'Look at our clean purok after bayanihan!',
+            'type' => 'general',
+            'media' => $image,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertDatabaseHas('posts', [
+            'user_id' => $user->id,
+            'content' => 'Look at our clean purok after bayanihan!',
+            'media_type' => 'image',
+        ]);
+
+        $post = Post::where('user_id', $user->id)->first();
+        $this->assertNotNull($post->media_url);
+    }
+
+    public function test_resident_can_create_post_with_video()
+    {
+        $user = User::create([
+            'barangay_id' => 'RES-102',
+            'name' => 'Juan Dela Cruz',
+            'email' => 'juan@example.com',
+            'role' => 'resident',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $video = UploadedFile::fake()->create('bayanihan_clip.mp4', 3000, 'video/mp4'); // 3MB
+
+        $response = $this->actingAs($user)->post('/posts', [
+            'content' => 'Short clip of the barangay basketball clinic!',
+            'type' => 'general',
+            'media' => $video,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertDatabaseHas('posts', [
+            'user_id' => $user->id,
+            'media_type' => 'video',
+        ]);
+    }
+
+    public function test_post_rejects_oversized_video()
+    {
+        $user = User::create([
+            'barangay_id' => 'RES-103',
+            'name' => 'Pedro Penduko',
+            'email' => 'pedro@example.com',
+            'role' => 'resident',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $oversizedVideo = UploadedFile::fake()->create('huge_movie.mp4', 20000, 'video/mp4'); // 20MB (> 15MB)
+
+        $response = $this->actingAs($user)->post('/posts', [
+            'content' => 'Too large video clip',
+            'type' => 'general',
+            'media' => $oversizedVideo,
+        ], ['Accept' => 'application/json']);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_resident_can_request_clearance()
+    {
+        $user = User::create([
+            'barangay_id' => 'RES-104',
+            'name' => 'Elena Adarna',
+            'email' => 'elena@example.com',
+            'role' => 'resident',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/services/request', [
+            'service_type' => 'Barangay Clearance',
+            'full_name' => 'Elena Adarna',
+            'contact_number' => '0917-123-4567',
+            'purpose' => 'Employment requirement',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertDatabaseHas('service_requests', [
+            'user_id' => $user->id,
+            'service_type' => 'Barangay Clearance',
+            'full_name' => 'Elena Adarna',
+            'status' => 'Pending',
+        ]);
     }
 }

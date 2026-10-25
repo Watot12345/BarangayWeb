@@ -37,6 +37,8 @@ class DashboardController extends Controller
                 'author' => $post->user->name,
                 'avatar' => $post->user->initials,
                 'content' => $post->content,
+                'media_url' => $post->media_url,
+                'media_type' => $post->media_type,
                 'time' => $post->created_at->diffForHumans(),
                 'likes' => $post->likes_count,
                 'liked' => $post->isLikedBy($user),

@@ -154,11 +154,11 @@
         <!-- Official Logo & Header -->
         <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
             <img src="{{ asset('1.jpg') }}" alt="Barangay Seal" class="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0">
-            <div>
-                <h1 class="text-sm font-bold text-slate-900 leading-tight">Brgy. San Agustin</h1>
-                <p class="text-[11px] text-slate-500 font-medium">
+            <div class="min-w-0">
+                <span class="text-sm font-bold text-slate-900 leading-tight block whitespace-nowrap">Brgy. San Agustin</span>
+                <span class="text-[11px] text-slate-500 font-medium block whitespace-nowrap">
                     {{ $isStaff ? 'Staff Admin Portal' : 'Resident Hub' }}
-                </p>
+                </span>
             </div>
         </div>
 
@@ -296,14 +296,14 @@
             
             <!-- Drawer Header -->
             <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <img src="{{ asset('1.jpg') }}" alt="Seal" class="w-9 h-9 rounded-full object-cover border border-slate-200">
-                    <div>
-                        <h2 class="text-xs font-bold text-slate-900">Brgy. San Agustin</h2>
-                        <span class="text-[10px] text-blue-800 font-semibold">{{ $isStaff ? 'Staff Admin Portal' : 'Resident Hub' }}</span>
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <img src="{{ asset('1.jpg') }}" alt="Seal" class="w-9 h-9 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                    <div class="min-w-0 flex flex-col justify-center">
+                        <span class="text-sm font-bold text-slate-900 block whitespace-nowrap leading-tight">Brgy. San Agustin</span>
+                        <span class="text-[11px] text-blue-800 font-semibold block whitespace-nowrap leading-tight">{{ $isStaff ? 'Staff Admin Portal' : 'Resident Hub' }}</span>
                     </div>
                 </div>
-                <button onclick="closeMobileDrawer()" class="w-7 h-7 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-sm font-bold">
+                <button onclick="closeMobileDrawer()" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-base font-bold flex-shrink-0 cursor-pointer">
                     &times;
                 </button>
             </div>
@@ -367,6 +367,9 @@
                 <button onclick="switchScreenMobile('home')" class="drawer-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100 font-medium text-left">
                     <i class="fas fa-newspaper w-4 text-center text-slate-600"></i> Community Feed
                 </button>
+                <button onclick="openModal('requestDocModal'); closeMobileDrawer();" class="drawer-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-blue-900 bg-blue-50/70 hover:bg-blue-100 font-semibold text-left">
+                    <i class="fas fa-file-invoice w-4 text-center text-blue-900"></i> Request Barangay Clearance
+                </button>
                 <button onclick="switchScreenMobile('health')" class="drawer-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100 font-medium text-left">
                     <i class="fas fa-heartbeat w-4 text-center text-slate-600"></i> Health Records Log
                 </button>
@@ -403,19 +406,19 @@
 
         <!-- Mobile App Top Bar -->
         <header class="md:hidden bg-white border-b border-slate-200 px-3.5 h-14 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-            <div class="flex items-center gap-2.5">
-                <button onclick="openMobileDrawer()" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 flex items-center justify-center transition cursor-pointer" aria-label="Open Navigation Menu">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <button onclick="openMobileDrawer()" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 flex items-center justify-center transition cursor-pointer flex-shrink-0" aria-label="Open Navigation Menu">
                     <i class="fas fa-bars text-sm"></i>
                 </button>
-                <img src="{{ asset('1.jpg') }}" alt="Seal" class="w-8 h-8 rounded-full object-cover border border-slate-200">
-                <div class="leading-tight">
-                    <h1 class="text-xs font-bold text-slate-900">Brgy. San Agustin</h1>
-                    <span id="mobile-current-screen-label" class="text-[10px] text-blue-800 font-semibold block">
+                <img src="{{ asset('1.jpg') }}" alt="Seal" class="w-8 h-8 rounded-full object-cover border border-slate-200 flex-shrink-0">
+                <div class="min-w-0 flex flex-col justify-center">
+                    <span class="text-xs sm:text-sm font-bold text-slate-900 block whitespace-nowrap leading-tight">Brgy. San Agustin</span>
+                    <span id="mobile-current-screen-label" class="text-[10px] text-blue-800 font-semibold block whitespace-nowrap leading-tight truncate">
                         {{ $isStaff ? 'Staff Admin Portal' : 'Resident Hub' }}
                     </span>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-shrink-0">
                 <button onclick="openModal('emergencyModal')" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center cursor-pointer" title="Hotlines">
                     <i class="fas fa-phone-alt text-xs"></i>
                 </button>
@@ -455,6 +458,9 @@
             @else
                 <button onclick="switchScreen('home')" id="mobile-chip-home" class="mobile-chip active px-3 py-1.5 rounded-full border border-slate-200 bg-slate-100 text-slate-700 font-medium">
                     <i class="fas fa-newspaper mr-1 text-[10px]"></i> Feed
+                </button>
+                <button onclick="openModal('requestDocModal')" class="mobile-chip px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-blue-900 font-semibold cursor-pointer">
+                    <i class="fas fa-file-invoice mr-1 text-[10px]"></i> Clearances
                 </button>
                 <button onclick="switchScreen('jobs')" id="mobile-chip-jobs" class="mobile-chip px-3 py-1.5 rounded-full border border-slate-200 bg-slate-100 text-slate-700 font-medium">
                     <i class="fas fa-briefcase mr-1 text-[10px]"></i> Job Openings
@@ -1219,6 +1225,26 @@
                                 <textarea id="broadcastContent" rows="5" required placeholder="Type the official public advisory (e.g. Weather updates, health mission, relief distribution dates)..." 
                                           class="w-full border border-slate-200 rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-900 bg-slate-50 focus:bg-white"></textarea>
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Official Photo or Video Attachment (Optional)</label>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <label for="broadcastMediaInput" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer shadow-2xs transition">
+                                        <i class="fas fa-photo-film text-blue-900"></i>
+                                        <span>Choose Media</span>
+                                    </label>
+                                    <input type="file" id="broadcastMediaInput" accept="image/*,video/mp4,video/webm,video/quicktime" class="hidden" onchange="handleMediaSelect(event, 'broadcast')">
+                                    <span id="broadcastMediaStatus" class="text-[11px] text-slate-500 truncate">Max 15MB video · Photos auto-compressed</span>
+                                </div>
+                                <div id="broadcastMediaPreviewBox" class="hidden mt-2.5 rounded-xl border border-slate-200 p-2.5 bg-slate-50">
+                                    <div id="broadcastMediaPreviewContent" class="overflow-hidden rounded-lg max-h-56 flex items-center justify-center bg-black/5"></div>
+                                    <div class="mt-2 flex items-center justify-between text-[11px] px-1">
+                                        <span id="broadcastMediaInfo" class="text-slate-600 font-medium"></span>
+                                        <button type="button" onclick="clearMedia('broadcast')" class="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer">
+                                            <i class="fas fa-trash-alt mr-1"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="flex items-center justify-end gap-2 pt-2">
                                 <button type="button" onclick="switchScreen('admin-overview')" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
                                     Cancel
@@ -1248,6 +1274,14 @@
                     </div>
                     <h2 class="text-base sm:text-xl font-bold text-white mt-2">Welcome to Barangay San Agustin</h2>
                     <p class="text-xs text-slate-300 mt-0.5">Stay connected with official advisories, public services, and neighborhood announcements.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="openModal('requestDocModal')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-xs">
+                            <i class="fas fa-file-invoice text-xs"></i> Request Clearance
+                        </button>
+                        <button type="button" onclick="switchScreen('jobs')" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                            <i class="fas fa-briefcase text-xs"></i> View Jobs
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Create Post Input Trigger (Mobile touch-friendly) -->
@@ -1529,6 +1563,26 @@
                             <textarea id="postContent" rows="4" required placeholder="What would you like to share with Barangay San Agustin neighbors?..." 
                                       class="w-full border border-slate-200 rounded-lg p-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-900 bg-slate-50"></textarea>
                         </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Attach Photo or Video (Optional)</label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <label for="postMediaInput" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer shadow-2xs transition">
+                                    <i class="fas fa-photo-film text-blue-900"></i>
+                                    <span>Choose Media</span>
+                                </label>
+                                <input type="file" id="postMediaInput" accept="image/*,video/mp4,video/webm,video/quicktime" class="hidden" onchange="handleMediaSelect(event, 'post')">
+                                <span id="postMediaStatus" class="text-[11px] text-slate-500 truncate">Max 15MB video · Photos auto-compressed</span>
+                            </div>
+                            <div id="postMediaPreviewBox" class="hidden mt-2.5 rounded-xl border border-slate-200 p-2.5 bg-slate-50">
+                                <div id="postMediaPreviewContent" class="overflow-hidden rounded-lg max-h-56 flex items-center justify-center bg-black/5"></div>
+                                <div class="mt-2 flex items-center justify-between text-[11px] px-1">
+                                    <span id="postMediaInfo" class="text-slate-600 font-medium"></span>
+                                    <button type="button" onclick="clearMedia('post')" class="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer">
+                                        <i class="fas fa-trash-alt mr-1"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="flex items-center justify-end gap-2 pt-2">
                             <button type="button" onclick="switchScreen('home')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">
                                 Cancel
@@ -1601,6 +1655,58 @@
 <!-- ============================================== -->
 <!-- CENTERED & MOBILE BOTTOM SHEET MODALS          -->
 <!-- ============================================== -->
+
+<!-- 0. Request Document / Barangay Clearance Modal (Resident) -->
+<div id="requestDocModal" class="modal-bg" onclick="closeModalOutside(event, 'requestDocModal')">
+    <div class="modal-sheet">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <i class="fas fa-file-invoice text-blue-900"></i> Request Barangay Document
+            </h3>
+            <button type="button" onclick="closeModal('requestDocModal')" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition cursor-pointer">
+                &times;
+            </button>
+        </div>
+        <form onsubmit="handleRequestDocSubmit(event)" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Document Type *</label>
+                <select id="requestDocType" required class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-sm sm:text-xs">
+                    <option value="Barangay Clearance">Barangay Clearance</option>
+                    <option value="Certificate of Indigency">Certificate of Indigency</option>
+                    <option value="Certificate of Residency">Certificate of Residency</option>
+                    <option value="Business Clearance">Barangay Business Clearance</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Full Legal Name *</label>
+                <input type="text" id="requestDocName" required value="{{ $user->name }}" 
+                       class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-sm sm:text-xs">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Contact Number</label>
+                <input type="text" id="requestDocPhone" value="{{ $user->phone ?? '' }}" placeholder="0917-XXX-XXXX" 
+                       class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-sm sm:text-xs">
+            </div>
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Purpose / Notes *</label>
+                <textarea id="requestDocPurpose" rows="3" required placeholder="e.g. Local employment, Postal ID, Bank account opening, Scholarship..." 
+                          class="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-sm sm:text-xs"></textarea>
+            </div>
+            <div class="p-2.5 bg-blue-50 border border-blue-100 rounded-lg text-[11px] text-blue-800 flex items-start gap-2">
+                <i class="fas fa-info-circle mt-0.5 text-blue-900"></i>
+                <span>Requests are usually processed within 1 to 2 business days. Present your Barangay ID or valid government ID upon claiming.</span>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeModal('requestDocModal')" class="px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-blue-900 hover:bg-blue-950 text-white px-5 py-2 rounded-lg font-semibold shadow-xs">
+                    Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- 1. Post Job Opening Modal (Staff) -->
 <div id="postJobModal" class="modal-bg" onclick="closeModalOutside(event, 'postJobModal')">
@@ -2130,6 +2236,24 @@
 
         container.innerHTML = displayPosts.map(post => {
             const isAnnouncement = post.type === 'announcement' || post.content.includes('[OFFICIAL BARANGAY ADVISORY]');
+            
+            let mediaHtml = '';
+            if (post.media_url) {
+                if (post.media_type === 'video') {
+                    mediaHtml = `
+                        <div class="mt-2.5 mb-2 overflow-hidden rounded-xl border border-slate-200 bg-black">
+                            <video controls playsinline preload="metadata" class="w-full max-h-80 sm:max-h-96 rounded-xl" src="${post.media_url}"></video>
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <div class="mt-2.5 mb-2 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center">
+                            <img src="${post.media_url}" alt="Post attachment" class="w-full h-auto max-h-80 sm:max-h-96 object-contain cursor-pointer hover:opacity-95 transition rounded-xl" onclick="window.open('${post.media_url}', '_blank')">
+                        </div>
+                    `;
+                }
+            }
+
             return `
                 <div class="civic-card p-4 sm:p-5 post-card ${isAnnouncement ? 'border-l-4 border-l-blue-900 bg-blue-50/20' : ''}" id="post-${post.id}">
                     <div class="flex items-center justify-between mb-3">
@@ -2150,6 +2274,8 @@
                     <p class="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line mb-3">
                         ${post.content}
                     </p>
+
+                    ${mediaHtml}
 
                     <div class="flex items-center gap-4 pt-2 border-t border-slate-100 text-xs text-slate-500">
                         <button onclick="toggleLike(${post.id})" class="like-btn flex items-center gap-1.5 hover:text-slate-900 transition cursor-pointer ${post.liked ? 'liked font-bold' : ''}">
@@ -2195,6 +2321,111 @@
         }
     }
 
+    // Media Upload & Client-Side Compression Storage
+    const mediaBlobs = {
+        post: null,
+        broadcast: null
+    };
+    const mediaTypes = {
+        post: null,
+        broadcast: null
+    };
+
+    function handleMediaSelect(e, formPrefix) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const previewBox = document.getElementById(formPrefix + 'MediaPreviewBox');
+        const previewContent = document.getElementById(formPrefix + 'MediaPreviewContent');
+        const infoLabel = document.getElementById(formPrefix + 'MediaInfo');
+        const statusLabel = document.getElementById(formPrefix + 'MediaStatus');
+
+        if (file.type.startsWith('image/')) {
+            if (statusLabel) statusLabel.textContent = 'Optimizing image...';
+            mediaTypes[formPrefix] = 'image';
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 1280;
+
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(function(blob) {
+                        mediaBlobs[formPrefix] = blob;
+                        const origSizeKB = Math.round(file.size / 1024);
+                        const compSizeKB = Math.round(blob.size / 1024);
+
+                        if (previewContent) {
+                            previewContent.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="max-h-52 rounded object-contain mx-auto" />`;
+                        }
+                        if (infoLabel) {
+                            infoLabel.innerHTML = `<span class="text-emerald-700 font-semibold">Compressed: ${compSizeKB} KB</span> <span class="text-slate-400 line-through">(${origSizeKB} KB)</span>`;
+                        }
+                        if (previewBox) previewBox.classList.remove('hidden');
+                        if (statusLabel) statusLabel.textContent = 'Image compressed & ready';
+                    }, 'image/jpeg', 0.82);
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type.startsWith('video/')) {
+            const sizeMB = file.size / (1024 * 1024);
+            if (sizeMB > 15) {
+                alert(`Selected video is too large (${sizeMB.toFixed(1)}MB). Please select a video under 15MB (e.g. under 60 seconds) to ensure quick mobile delivery.`);
+                e.target.value = '';
+                clearMedia(formPrefix);
+                return;
+            }
+
+            mediaTypes[formPrefix] = 'video';
+            mediaBlobs[formPrefix] = file;
+
+            const videoUrl = URL.createObjectURL(file);
+            if (previewContent) {
+                previewContent.innerHTML = `<video src="${videoUrl}" controls playsinline class="max-h-52 rounded mx-auto"></video>`;
+            }
+            if (infoLabel) {
+                infoLabel.innerHTML = `<span class="text-blue-900 font-semibold"><i class="fas fa-video mr-1"></i> Video (${sizeMB.toFixed(1)} MB)</span>`;
+            }
+            if (previewBox) previewBox.classList.remove('hidden');
+            if (statusLabel) statusLabel.textContent = 'Video ready';
+        } else {
+            alert('Please select an image or video file (MP4, WebM, MOV, JPG, PNG).');
+            e.target.value = '';
+        }
+    }
+
+    function clearMedia(formPrefix) {
+        mediaBlobs[formPrefix] = null;
+        mediaTypes[formPrefix] = null;
+        const fileInput = document.getElementById(formPrefix + 'MediaInput');
+        if (fileInput) fileInput.value = '';
+        const previewBox = document.getElementById(formPrefix + 'MediaPreviewBox');
+        if (previewBox) previewBox.classList.add('hidden');
+        const previewContent = document.getElementById(formPrefix + 'MediaPreviewContent');
+        if (previewContent) previewContent.innerHTML = '';
+        const statusLabel = document.getElementById(formPrefix + 'MediaStatus');
+        if (statusLabel) statusLabel.textContent = 'Max 15MB video · Photos auto-compressed';
+    }
+
     // Create Community Post
     async function handlePostSubmit(e) {
         e.preventDefault();
@@ -2202,25 +2433,46 @@
         const type = document.getElementById('postType').value;
         if (!content) return;
 
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const origText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Publishing...';
+
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('type', type);
+        formData.append('visibility', 'Public');
+
+        if (mediaBlobs.post) {
+            const ext = mediaTypes.post === 'image' ? 'jpg' : (mediaBlobs.post.name ? mediaBlobs.post.name.split('.').pop() : 'mp4');
+            formData.append('media', mediaBlobs.post, mediaTypes.post === 'image' ? 'upload.jpg' : (mediaBlobs.post.name || 'video.mp4'));
+        }
+
         try {
             const res = await fetch("{{ route('posts.store') }}", {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ content: content, type: type, visibility: 'Public' })
+                body: formData
             });
             const data = await res.json();
             if (data.success && data.post) {
                 posts.unshift(data.post);
                 document.getElementById('postContent').value = '';
+                clearMedia('post');
+                renderFeed();
                 showToast('Post published to community feed!');
                 switchScreen('home');
+            } else {
+                showToast(data.message || 'Failed to create post', 'error');
             }
-        } catch (e) {
+        } catch (err) {
             showToast('Failed to create post', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origText;
         }
     }
 
@@ -2230,25 +2482,88 @@
         const content = document.getElementById('broadcastContent').value.trim();
         if (!content) return;
 
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const origText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Broadcasting...';
+
+        const formData = new FormData();
+        formData.append('content', content);
+
+        if (mediaBlobs.broadcast) {
+            const ext = mediaTypes.broadcast === 'image' ? 'jpg' : (mediaBlobs.broadcast.name ? mediaBlobs.broadcast.name.split('.').pop() : 'mp4');
+            formData.append('media', mediaBlobs.broadcast, mediaTypes.broadcast === 'image' ? 'upload.jpg' : (mediaBlobs.broadcast.name || 'video.mp4'));
+        }
+
         try {
             const res = await fetch("{{ route('admin.broadcast') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success && data.post) {
+                posts.unshift(data.post);
+                document.getElementById('broadcastContent').value = '';
+                clearMedia('broadcast');
+                renderFeed();
+                showToast('Official advisory published!');
+                switchScreen('home');
+            } else {
+                showToast(data.message || 'Failed to publish advisory', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to publish advisory', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origText;
+        }
+    }
+
+    // Request Document / Clearance (Resident)
+    async function handleRequestDocSubmit(e) {
+        e.preventDefault();
+        const serviceType = document.getElementById('requestDocType').value;
+        const fullName = document.getElementById('requestDocName').value.trim();
+        const phone = document.getElementById('requestDocPhone').value.trim();
+        const purpose = document.getElementById('requestDocPurpose').value.trim();
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const origText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Submitting...';
+
+        try {
+            const res = await fetch("{{ route('services.request') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ content: content })
+                body: JSON.stringify({
+                    service_type: serviceType,
+                    full_name: fullName,
+                    contact_number: phone,
+                    purpose: purpose
+                })
             });
             const data = await res.json();
-            if (data.success && data.post) {
-                posts.unshift(data.post);
-                document.getElementById('broadcastContent').value = '';
-                showToast('Official advisory published!');
-                switchScreen('home');
+            if (data.success) {
+                showToast(data.message || 'Clearance request submitted successfully!');
+                closeModal('requestDocModal');
+                document.getElementById('requestDocPurpose').value = '';
+            } else {
+                showToast(data.message || 'Error submitting request', 'error');
             }
-        } catch (e) {
-            showToast('Failed to publish advisory', 'error');
+        } catch (err) {
+            showToast('Failed to submit clearance request', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origText;
         }
     }
 

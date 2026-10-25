@@ -108,11 +108,40 @@ class AdminController extends Controller
 
         $validated = $request->validate([
             'content' => 'required|string|min:5|max:1500',
+            'media' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,gif,mp4,mov,webm', 'max:15360'],
         ]);
+
+        $mediaUrl = null;
+        $mediaType = null;
+
+        if ($request->hasFile('media') && $request->file('media')->isValid()) {
+            $file = $request->file('media');
+            $mime = $file->getMimeType();
+            $uploadDir = public_path('uploads/posts');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            if (str_starts_with($mime, 'image/')) {
+                $mediaType = 'image';
+                $filename = 'img_' . uniqid() . '_' . time() . '.webp';
+                $targetPath = $uploadDir . '/' . $filename;
+                $this->compressAndSaveImage($file, $targetPath);
+                $mediaUrl = asset('uploads/posts/' . $filename);
+            } elseif (str_starts_with($mime, 'video/')) {
+                $mediaType = 'video';
+                $ext = $file->getClientOriginalExtension() ?: 'mp4';
+                $filename = 'vid_' . uniqid() . '_' . time() . '.' . $ext;
+                $file->move($uploadDir, $filename);
+                $mediaUrl = asset('uploads/posts/' . $filename);
+            }
+        }
 
         $post = Post::create([
             'user_id' => Auth::id(),
             'content' => '📢 [OFFICIAL BARANGAY ADVISORY] ' . $validated['content'],
+            'media_url' => $mediaUrl,
+            'media_type' => $mediaType,
             'type' => 'announcement',
             'visibility' => 'Public',
             'likes_count' => 0,
@@ -126,6 +155,8 @@ class AdminController extends Controller
                 'author' => Auth::user()->name,
                 'avatar' => Auth::user()->initials,
                 'content' => $post->content,
+                'media_url' => $post->media_url,
+                'media_type' => $post->media_type,
                 'time' => 'Just now',
                 'likes' => 0,
                 'liked' => false,
@@ -134,6 +165,49 @@ class AdminController extends Controller
                 'comments' => [],
             ],
         ]);
+    }
+
+    protected function compressAndSaveImage($file, string $targetPath): void
+    {
+        $mime = $file->getMimeType();
+        $source = null;
+
+        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+            $source = @imagecreatefromjpeg($file->getRealPath());
+        } elseif ($mime === 'image/png') {
+            $source = @imagecreatefrompng($file->getRealPath());
+        } elseif ($mime === 'image/webp') {
+            $source = @imagecreatefromwebp($file->getRealPath());
+        }
+
+        if ($source) {
+            $origWidth = imagesx($source);
+            $origHeight = imagesy($source);
+            $maxDimension = 1280;
+
+            if ($origWidth > $maxDimension || $origHeight > $maxDimension) {
+                $ratio = min($maxDimension / $origWidth, $maxDimension / $origHeight);
+                $newWidth = (int)($origWidth * $ratio);
+                $newHeight = (int)($origHeight * $ratio);
+                $canvas = imagecreatetruecolor($newWidth, $newHeight);
+
+                imagealphablending($canvas, false);
+                imagesavealpha($canvas, true);
+
+                imagecopyresampled($canvas, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+                imagedestroy($source);
+                $source = $canvas;
+            }
+
+            if (function_exists('imagewebp')) {
+                imagewebp($source, $targetPath, 80);
+            } else {
+                imagejpeg($source, $targetPath, 80);
+            }
+            imagedestroy($source);
+        } else {
+            $file->move(dirname($targetPath), basename($targetPath));
+        }
     }
 
     public function storeRecruiter(Request $request)

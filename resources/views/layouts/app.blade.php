@@ -20,6 +20,14 @@
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
 
+        /* Ensure utility classes on headings are strictly respected on all screen sizes */
+        @media (max-width: 640px) {
+            h1, h2, h3, h4, h5, h6 {
+                font-size: inherit;
+                line-height: inherit;
+            }
+        }
+
         /* Navbar Guaranteed High-Contrast Styles */
         nav.navbar {
             background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;

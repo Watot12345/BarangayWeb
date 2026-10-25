@@ -1956,20 +1956,7 @@
   body {
     font-family: 'Poppins', sans-serif;
   }
-  @media (max-width: 640px) {
-    h1 {
-      font-size: 1.5rem !important;
-    }
-    h2 {
-      font-size: 1.75rem !important;
-    }
-    h3 {
-      font-size: 1.125rem !important;
-    }
-    p {
-      font-size: 0.95rem;
-    }
-  }
+
 }
 @layer components {
   .navbar {

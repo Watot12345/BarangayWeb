@@ -11,6 +11,8 @@ class Post extends Model
     protected $fillable = [
         'user_id',
         'content',
+        'media_url',
+        'media_type',
         'type',
         'visibility',
         'likes_count',
