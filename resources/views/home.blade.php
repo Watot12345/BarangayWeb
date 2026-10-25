@@ -57,75 +57,75 @@
     <nav class="navbar text-white py-4 px-6 shadow-lg sticky top-0 z-40" style="background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center">
-                <img src="{{ asset('1.jpg') }}" alt="Barangay Logo" class="w-10 h-10 rounded-full border-2 border-white mr-3 object-cover">
+                <img src="{{ asset('1.jpg') }}" alt="Barangay Logo" class="w-10 h-10 rounded-full border-2 border-white mr-3 object-cover shadow-sm">
                 <div>
-                    <h1 class="text-base md:text-xl font-bold">Barangay San Agustin</h1>
+                    <h1 class="text-base md:text-xl font-bold text-white tracking-wide">Barangay San Agustin</h1>
                     <p class="text-xs md:text-sm text-blue-100 hidden sm:block">Community-Focused Systems</p>
                 </div>
             </div>
             
-            <!-- Hamburger Menu -->
-            <div class="hamburger md:hidden cursor-pointer text-xl" id="hamburger">
+            <!-- Hamburger Menu Button -->
+            <button type="button" id="hamburger" aria-label="Toggle navigation menu" class="md:hidden text-white text-2xl p-2 rounded-lg hover:bg-white/10 focus:outline-none cursor-pointer flex items-center justify-center transition">
                 <i class="fas fa-bars"></i>
-            </div>
+            </button>
             
             <!-- Desktop Navigation Links -->
-            <div class="hidden md:flex md:flex-row items-center space-x-1 lg:space-x-6 text-sm lg:text-base">
-                <a href="#" class="px-3 py-2 rounded hover:bg-blue-700 transition">Home</a>
-                <a href="#services" class="px-3 py-2 rounded hover:bg-blue-700 transition">Services</a>
-                <a href="#officials" class="px-3 py-2 rounded hover:bg-blue-700 transition">Officials</a>
-                <a href="#news" class="px-3 py-2 rounded hover:bg-blue-700 transition">News & Events</a>
-                <a href="#contact" class="px-3 py-2 rounded hover:bg-blue-700 transition">Contact</a>
-                <div class="flex items-center space-x-2">
+            <div class="hidden md:flex md:flex-row items-center space-x-1 lg:space-x-4 text-sm lg:text-base">
+                <a href="#" class="nav-link text-white font-medium px-3 py-2 rounded-lg hover:bg-white/15 transition">Home</a>
+                <a href="#services" class="nav-link text-white font-medium px-3 py-2 rounded-lg hover:bg-white/15 transition">Services</a>
+                <a href="#officials" class="nav-link text-white font-medium px-3 py-2 rounded-lg hover:bg-white/15 transition">Officials</a>
+                <a href="#news" class="nav-link text-white font-medium px-3 py-2 rounded-lg hover:bg-white/15 transition">News & Events</a>
+                <a href="#contact" class="nav-link text-white font-medium px-3 py-2 rounded-lg hover:bg-white/15 transition">Contact</a>
+                <div class="flex items-center space-x-2 ml-2">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="bg-blue-700 hover:bg-blue-800 px-3 lg:px-4 py-2 rounded-lg transition text-sm font-semibold flex items-center gap-2">
+                        <a href="{{ route('dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-lg transition text-sm font-semibold flex items-center gap-2 shadow">
                             <i class="fas fa-user-circle"></i>
                             <span>{{ Auth::user()->name }}</span>
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
-                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition text-sm">
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition text-sm cursor-pointer shadow">
                                 <i class="fas fa-sign-out-alt"></i>
                             </button>
                         </form>
                     @else
-                        <a href="javascript:void(0)" onclick="openLoginModal()" class="bg-blue-800 hover:bg-blue-900 px-3 lg:px-4 py-2 rounded transition text-sm lg:text-base cursor-pointer">
-                            <i class="fas fa-sign-in-alt mr-1"></i>Login
-                        </a>
-                        <a href="javascript:void(0)" onclick="openRegisterModal()" class="bg-white text-blue-700 hover:bg-gray-100 px-3 lg:px-4 py-2 rounded transition text-sm lg:text-base cursor-pointer font-medium">
-                            <i class="fas fa-user-plus mr-1"></i>Register
-                        </a>
+                        <button type="button" onclick="openLoginModal()" class="bg-blue-700 hover:bg-blue-800 text-white px-3.5 py-2 rounded-lg transition text-sm font-semibold cursor-pointer shadow-sm flex items-center gap-1.5">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                        <button type="button" onclick="openRegisterModal()" class="bg-white text-blue-900 hover:bg-blue-50 px-3.5 py-2 rounded-lg transition text-sm font-bold cursor-pointer shadow flex items-center gap-1.5">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
                     @endauth
                 </div>
             </div>
         </div>
         
         <!-- Mobile Navigation Menu -->
-        <div class="mobile-menu md:hidden hidden bg-blue-800 rounded mt-2" id="mobileMenu">
-            <div class="flex flex-col px-2 py-4 space-y-2">
-                <a href="#" class="block px-4 py-3 rounded hover:bg-blue-700 transition text-sm">Home</a>
-                <a href="#services" class="block px-4 py-3 rounded hover:bg-blue-700 transition text-sm">Services</a>
-                <a href="#officials" class="block px-4 py-3 rounded hover:bg-blue-700 transition text-sm">Officials</a>
-                <a href="#news" class="block px-4 py-3 rounded hover:bg-blue-700 transition text-sm">News & Events</a>
-                <a href="#contact" class="block px-4 py-3 rounded hover:bg-blue-700 transition text-sm">Contact</a>
-                <div class="flex flex-col space-y-2 pt-2 border-t border-blue-700">
+        <div class="md:hidden hidden bg-blue-900/95 backdrop-blur-md rounded-xl mt-3 p-3 shadow-xl border border-blue-700/50" id="mobileMenu">
+            <div class="flex flex-col space-y-1">
+                <a href="#" class="block px-4 py-2.5 rounded-lg text-white font-medium hover:bg-white/10 transition text-sm">Home</a>
+                <a href="#services" class="block px-4 py-2.5 rounded-lg text-white font-medium hover:bg-white/10 transition text-sm">Services</a>
+                <a href="#officials" class="block px-4 py-2.5 rounded-lg text-white font-medium hover:bg-white/10 transition text-sm">Officials</a>
+                <a href="#news" class="block px-4 py-2.5 rounded-lg text-white font-medium hover:bg-white/10 transition text-sm">News & Events</a>
+                <a href="#contact" class="block px-4 py-2.5 rounded-lg text-white font-medium hover:bg-white/10 transition text-sm">Contact</a>
+                <div class="flex flex-col space-y-2 pt-3 mt-1 border-t border-blue-700/60">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="block text-center bg-blue-900 text-white px-4 py-2 rounded transition text-sm font-semibold">
+                        <a href="{{ route('dashboard') }}" class="block text-center bg-blue-600 text-white px-4 py-2.5 rounded-lg transition text-sm font-semibold shadow">
                             Resident Dashboard
                         </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="w-full text-center bg-red-600 text-white px-4 py-2 rounded transition text-sm">
+                            <button type="submit" class="w-full text-center bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg transition text-sm font-medium">
                                 Logout
                             </button>
                         </form>
                     @else
-                        <a href="javascript:void(0)" onclick="openLoginModal()" class="block text-center bg-blue-900 hover:bg-blue-950 px-4 py-2 rounded transition text-sm cursor-pointer">
-                            <i class="fas fa-sign-in-alt mr-1"></i>Login
-                        </a>
-                        <a href="javascript:void(0)" onclick="openRegisterModal()" class="block text-center bg-white text-blue-700 hover:bg-gray-100 px-4 py-2 rounded transition text-sm cursor-pointer font-medium">
-                            <i class="fas fa-user-plus mr-1"></i>Register
-                        </a>
+                        <button type="button" onclick="openLoginModal()" class="w-full text-center bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg transition text-sm cursor-pointer font-medium flex items-center justify-center gap-1.5 shadow">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                        <button type="button" onclick="openRegisterModal()" class="w-full text-center bg-white text-blue-900 hover:bg-blue-50 px-4 py-2.5 rounded-lg transition text-sm cursor-pointer font-bold shadow flex items-center justify-center gap-1.5">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
                     @endauth
                 </div>
             </div>
@@ -519,12 +519,12 @@
     <!-- EMERGENCY MODAL -->
     <div id="emergencyModal" class="modal-overlay">
         <div class="bg-white rounded-2xl max-w-lg w-[95%] sm:w-[90%] md:w-full overflow-hidden shadow-2xl mx-4">
-            <div class="bg-gradient-to-r from-red-600 to-red-700 px-4 sm:px-6 py-4 flex justify-between items-center">
+            <div class="modal-header-red px-4 sm:px-6 py-4 flex justify-between items-center rounded-t-2xl">
                 <div class="flex items-center">
                     <img src="{{ asset('1.jpg') }}" alt="Barangay Logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 object-cover border-2 border-white shadow-lg">
                     <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-white">🚨 Emergency Hotlines</h3>
                 </div>
-                <button onclick="closeEmergencyModal()" class="text-white hover:text-gray-200 text-2xl sm:text-3xl">&times;</button>
+                <button type="button" onclick="closeEmergencyModal()" class="modal-close-btn" aria-label="Close">&times;</button>
             </div>
             
             <div class="p-4 sm:p-6 bg-gray-50 max-h-[70vh] overflow-y-auto space-y-3">
@@ -572,7 +572,7 @@
                     </div>
                 </div>
 
-                <button onclick="closeEmergencyModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2.5 rounded-lg mt-4">
+                <button onclick="closeEmergencyModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2.5 rounded-lg mt-4 cursor-pointer">
                     Close
                 </button>
             </div>
@@ -582,12 +582,12 @@
     <!-- LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay">
         <div class="bg-white rounded-2xl max-w-md w-[95%] sm:w-[90%] md:w-full overflow-hidden shadow-2xl mx-4">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-5 flex justify-between items-center">
+            <div class="modal-header-blue px-6 py-5 flex justify-between items-center rounded-t-2xl">
                 <div class="flex items-center">
                     <img src="{{ asset('1.jpg') }}" alt="Barangay Logo" class="w-12 h-12 rounded-full mr-3 object-cover border-2 border-white shadow-lg">
                     <h3 class="text-xl sm:text-2xl font-bold text-white">Welcome Back! 👋</h3>
                 </div>
-                <button onclick="closeLoginModal()" class="text-white hover:text-gray-200 text-3xl">&times;</button>
+                <button type="button" onclick="closeLoginModal()" class="modal-close-btn" aria-label="Close">&times;</button>
             </div>
             
             <form id="loginForm" onsubmit="handleAjaxLogin(event)" class="p-6 bg-gray-50">
@@ -614,7 +614,7 @@
                     <i class="fas fa-info-circle mr-1"></i> Demo resident login: <strong>maria@example.com</strong> / password: <strong>password</strong>
                 </div>
                 
-                <button type="submit" id="loginSubmitBtn" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center">
+                <button type="submit" id="loginSubmitBtn" class="btn-submit-blue w-full py-3.5 px-6 rounded-xl text-white font-bold flex items-center justify-center cursor-pointer">
                     <i class="fas fa-sign-in-alt mr-2"></i>Login to Dashboard
                 </button>
                 
@@ -631,7 +631,7 @@
     <!-- REGISTER MODAL -->
     <div id="registerModal" class="modal-overlay">
         <div class="bg-white rounded-2xl max-w-4xl w-[95%] overflow-hidden shadow-2xl mx-4">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 flex justify-between items-center">
+            <div class="modal-header-blue px-6 py-4 flex justify-between items-center rounded-t-2xl">
                 <div class="flex items-center">
                     <img src="{{ asset('1.jpg') }}" alt="Barangay Logo" class="w-12 h-12 rounded-full mr-3 object-cover border-2 border-white shadow-lg">
                     <div>
@@ -639,7 +639,7 @@
                         <p class="text-xs text-blue-200">Barangay San Agustin Residency Verification</p>
                     </div>
                 </div>
-                <button onclick="closeRegisterModal()" class="text-white hover:text-gray-200 text-3xl">&times;</button>
+                <button type="button" onclick="closeRegisterModal()" class="modal-close-btn" aria-label="Close">&times;</button>
             </div>
             
             <form id="registerForm" onsubmit="handleAjaxRegister(event)" class="p-6 bg-gray-50 max-h-[80vh] overflow-y-auto">
@@ -707,7 +707,7 @@
                     </div>
                 </div>
                 
-                <button type="submit" id="regSubmitBtn" class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition">
+                <button type="submit" id="regSubmitBtn" class="btn-submit-green w-full py-3.5 px-6 rounded-xl text-white font-bold flex items-center justify-center cursor-pointer">
                     <i class="fas fa-user-plus mr-2"></i>Create Resident Account & Verify
                 </button>
             </form>
@@ -717,9 +717,9 @@
     <!-- DOCUMENT SERVICE REQUEST MODAL -->
     <div id="serviceRequestModal" class="modal-overlay">
         <div class="bg-white rounded-2xl max-w-md w-[95%] overflow-hidden shadow-2xl mx-4">
-            <div class="bg-blue-700 px-6 py-4 flex justify-between items-center text-white">
-                <h3 class="font-bold text-lg" id="serviceModalTitle">Request Document</h3>
-                <button onclick="closeServiceRequestModal()" class="text-2xl">&times;</button>
+            <div class="modal-header-blue px-6 py-4 flex justify-between items-center text-white rounded-t-2xl">
+                <h3 class="font-bold text-lg text-white" id="serviceModalTitle">Request Document</h3>
+                <button type="button" onclick="closeServiceRequestModal()" class="modal-close-btn" aria-label="Close">&times;</button>
             </div>
             <form onsubmit="handleServiceRequest(event)" class="p-6 space-y-4">
                 @csrf
@@ -736,7 +736,7 @@
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Purpose of Request</label>
                     <textarea id="reqPurpose" name="purpose" rows="3" placeholder="e.g. Employment, Bank requirement, Scholarship" class="w-full p-2.5 border rounded-lg text-sm" required></textarea>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                <button type="submit" class="btn-submit-blue w-full py-3 rounded-xl font-bold text-white transition cursor-pointer">
                     Submit Request
                 </button>
             </form>
@@ -747,7 +747,7 @@
     <button onclick="toggleAIAssistant()" class="ai-float-btn group z-50 cursor-pointer bg-transparent border-0 p-0">
         <div class="relative">
             <div class="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-25"></div>
-            <div class="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110 flex items-center justify-center overflow-hidden">
+            <div class="relative bg-blue-600 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110 flex items-center justify-center overflow-hidden">
                 <img src="{{ asset('1.png') }}" class="w-10 h-10 rounded-full object-cover" alt="AI Assistant">
             </div>
             <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
@@ -785,8 +785,23 @@
     const hamburger = document.getElementById('hamburger');
     const mobileMenu = document.getElementById('mobileMenu');
     if (hamburger && mobileMenu) {
-        hamburger.addEventListener('click', () => {
+        hamburger.addEventListener('click', (e) => {
+            e.stopPropagation();
             mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Close mobile menu when a link or button is clicked
+        mobileMenu.querySelectorAll('a, button').forEach(item => {
+            item.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
         });
     }
 

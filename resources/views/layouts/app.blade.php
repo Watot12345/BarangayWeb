@@ -15,6 +15,49 @@
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
 
+        /* Navbar Guaranteed High-Contrast Styles */
+        nav.navbar {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+            color: #ffffff !important;
+        }
+        nav.navbar h1,
+        nav.navbar p,
+        nav.navbar span,
+        nav.navbar i {
+            color: #ffffff !important;
+        }
+        nav.navbar a.nav-link {
+            color: #ffffff !important;
+            opacity: 0.95;
+            transition: all 0.2s ease;
+        }
+        nav.navbar a.nav-link:hover {
+            color: #ffffff !important;
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        /* Hamburger & Mobile Menu Rules */
+        #hamburger {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer !important;
+        }
+        @media (min-width: 768px) {
+            #hamburger {
+                display: none !important;
+            }
+        }
+        #mobileMenu.hidden {
+            display: none !important;
+        }
+        #mobileMenu:not(.hidden) {
+            display: block !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
         /* Modal Overlay Styles */
         .modal-overlay {
             display: none;
@@ -61,6 +104,100 @@
         @keyframes slideUp {
             from { transform: translateY(60px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Modal Headers - Guaranteed Gradient & White Text */
+        .modal-header-blue {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+            color: #ffffff !important;
+        }
+        .modal-header-blue h3,
+        .modal-header-blue p,
+        .modal-header-blue span {
+            color: #ffffff !important;
+        }
+        .modal-header-red {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            color: #ffffff !important;
+        }
+        .modal-header-red h3,
+        .modal-header-red p,
+        .modal-header-red span {
+            color: #ffffff !important;
+        }
+
+        /* Modal Close Button */
+        .modal-close-btn {
+            color: #ffffff !important;
+            opacity: 0.85;
+            font-size: 2rem !important;
+            line-height: 1 !important;
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            padding: 0 0.5rem;
+            transition: opacity 0.2s ease, transform 0.2s ease !important;
+        }
+        .modal-close-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.15);
+        }
+
+        /* Buttons: Guaranteed Visible Backgrounds & Text */
+        .btn-submit-blue {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.38) !important;
+            transition: all 0.2s ease !important;
+        }
+        .btn-submit-blue:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+            background-color: #1d4ed8 !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.48) !important;
+            transform: translateY(-1px) !important;
+        }
+        .btn-submit-green {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+            background-color: #16a34a !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.38) !important;
+            transition: all 0.2s ease !important;
+        }
+        .btn-submit-green:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+            background-color: #15803d !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px 0 rgba(22, 163, 74, 0.48) !important;
+            transform: translateY(-1px) !important;
+        }
+        .btn-submit-red {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 14px 0 rgba(220, 38, 38, 0.38) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        /* Fallbacks for Tailwind gradient classes to prevent collision transparent backgrounds */
+        .bg-gradient-to-r.from-blue-600.to-blue-800 {
+            background: linear-gradient(to right, #2563eb, #1e40af) !important;
+            color: #ffffff !important;
+        }
+        .bg-gradient-to-r.from-green-600.to-green-700 {
+            background: linear-gradient(to right, #16a34a, #15803d) !important;
+            color: #ffffff !important;
+        }
+        .bg-gradient-to-r.from-red-600.to-red-700 {
+            background: linear-gradient(to right, #dc2626, #b91c1c) !important;
+            color: #ffffff !important;
+        }
+        .welcome-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%) !important;
         }
 
         /* Toast notifications */
