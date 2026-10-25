@@ -148,8 +148,48 @@ class DatabaseSeeder extends Seeder
         ReliefRequest::create([
             'user_id' => $maria->id,
             'assistance_type' => 'Food Pack',
-            'details' => 'Family assistance kit for calamity preparedness.',
+            'details' => 'Family assistance kit for calamity preparedness, Purok 3.',
+            'status' => 'Pending',
+        ]);
+
+        ReliefRequest::create([
+            'user_id' => $roberto->id,
+            'assistance_type' => 'Emergency Shelter',
+            'details' => 'Tarpaulin kit request for roof repair due to strong winds, Purok 2.',
             'status' => 'Approved',
+        ]);
+
+        // 9. Sample Document Service Requests
+        \App\Models\ServiceRequest::create([
+            'user_id' => $maria->id,
+            'service_type' => 'Barangay Clearance',
+            'full_name' => 'Maria R. Santos',
+            'contact_number' => '0917-123-4567',
+            'purpose' => 'Employment requirement for BPO company',
+            'status' => 'Pending',
+        ]);
+
+        \App\Models\ServiceRequest::create([
+            'user_id' => $john->id,
+            'service_type' => 'Certificate of Indigency',
+            'full_name' => 'John D.',
+            'contact_number' => '0922-111-2233',
+            'purpose' => 'Hospital medical assistance discount',
+            'status' => 'Ready for Pick-up',
+        ]);
+
+        // 10. Sample Job Applications
+        JobApplication::create([
+            'user_id' => $ana->id,
+            'job_title' => 'Community Health Worker (BHW)',
+            'status' => 'Submitted',
+        ]);
+
+        // 11. Sample Scholarship Application
+        ScholarshipApplication::create([
+            'user_id' => $roberto->id,
+            'status' => 'Submitted',
+            'notes' => 'School: City College of SJDM | Course: BS Education - 2nd Year | GWA: 1.75',
         ]);
     }
 }

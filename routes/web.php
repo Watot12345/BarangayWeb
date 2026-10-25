@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AdminController;
 
 // Lightweight keep-alive / health-check endpoints for uptime monitors (cron-job.org)
 Route::get('/ping', function () {
@@ -44,4 +45,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/services/health', [ServiceController::class, 'storeHealth'])->name('services.health');
     Route::post('/services/job', [ServiceController::class, 'applyJob'])->name('services.job');
     Route::post('/services/scholarship', [ServiceController::class, 'applyScholarship'])->name('services.scholarship');
+
+    // Admin & Staff operations
+    Route::post('/admin/requests/{id}/status', [AdminController::class, 'updateServiceRequestStatus'])->name('admin.requests.status');
+    Route::post('/admin/relief/{id}/status', [AdminController::class, 'updateReliefRequestStatus'])->name('admin.relief.status');
+    Route::post('/admin/jobs/{id}/status', [AdminController::class, 'updateJobApplicationStatus'])->name('admin.jobs.status');
+    Route::post('/admin/scholarships/{id}/status', [AdminController::class, 'updateScholarshipStatus'])->name('admin.scholarships.status');
+    Route::post('/admin/broadcast', [AdminController::class, 'broadcastAnnouncement'])->name('admin.broadcast');
 });

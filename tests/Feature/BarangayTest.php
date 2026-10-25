@@ -112,4 +112,78 @@ class BarangayTest extends TestCase
         $health->assertStatus(200);
         $health->assertJson(['status' => 'ok']);
     }
+
+    public function test_admin_can_view_admin_console_on_dashboard()
+    {
+        $admin = User::create([
+            'barangay_id' => 'ADMIN-001',
+            'name' => 'Barangay Captain / Admin',
+            'email' => 'admin@sjdm.gov.ph',
+            'role' => 'admin',
+            'password' => bcrypt('admin123'),
+        ]);
+
+        $response = $this->actingAs($admin)->get('/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('Staff Admin Portal');
+        $response->assertSee('Clearance Requests');
+    }
+
+    public function test_admin_can_update_service_request_status()
+    {
+        $admin = User::create([
+            'barangay_id' => 'ADMIN-001',
+            'name' => 'Admin User',
+            'email' => 'admin@sjdm.gov.ph',
+            'role' => 'admin',
+            'password' => bcrypt('admin123'),
+        ]);
+
+        $resident = User::create([
+            'barangay_id' => 'BRGY-001',
+            'name' => 'Resident Maria',
+            'email' => 'maria@example.com',
+            'role' => 'resident',
+            'password' => bcrypt('password'),
+        ]);
+
+        $req = \App\Models\ServiceRequest::create([
+            'user_id' => $resident->id,
+            'service_type' => 'Barangay Clearance',
+            'purpose' => 'Employment requirement',
+            'status' => 'Pending Review',
+        ]);
+
+        $response = $this->actingAs($admin)->postJson("/admin/requests/{$req->id}/status", [
+            'status' => 'Ready for Pick-up',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+        $this->assertEquals('Ready for Pick-up', $req->fresh()->status);
+    }
+
+    public function test_resident_cannot_access_admin_endpoints()
+    {
+        $resident = User::create([
+            'barangay_id' => 'BRGY-001',
+            'name' => 'Resident Maria',
+            'email' => 'maria@example.com',
+            'role' => 'resident',
+            'password' => bcrypt('password'),
+        ]);
+
+        $req = \App\Models\ServiceRequest::create([
+            'user_id' => $resident->id,
+            'service_type' => 'Barangay Clearance',
+            'purpose' => 'Employment requirement',
+            'status' => 'Pending Review',
+        ]);
+
+        $response = $this->actingAs($resident)->postJson("/admin/requests/{$req->id}/status", [
+            'status' => 'Issued',
+        ]);
+
+        $response->assertStatus(403);
+    }
 }

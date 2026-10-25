@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Barangay San Agustin - Resident Community Hub')
+@section('title', 'Barangay San Agustin - ' . ($user->role === 'admin' ? 'Staff Administration Console' : 'Resident Community Hub'))
 
 @section('body-class', 'bg-slate-100 min-h-screen text-slate-800 antialiased')
 
@@ -74,60 +74,111 @@
     <aside class="hidden md:flex md:w-64 lg:w-72 flex-col bg-white border-r border-slate-200/90 min-h-screen sticky top-0 h-screen overflow-y-auto p-5 z-30 flex-shrink-0 shadow-xs">
         
         <!-- Official Logo & Header -->
-        <div class="flex items-center gap-3 pb-5 border-b border-slate-100">
+        <div class="flex items-center gap-3 pb-4 border-b border-slate-100">
             <img src="{{ asset('1.jpg') }}" alt="Barangay San Agustin Seal" class="w-11 h-11 rounded-full object-cover border-2 border-blue-600 shadow-sm flex-shrink-0">
             <div>
                 <h1 class="text-sm font-extrabold text-blue-950 leading-tight">Brgy. San Agustin</h1>
-                <p class="text-[11px] text-slate-500 font-medium">Community & Staff Hub</p>
+                <p class="text-[11px] text-slate-500 font-medium">
+                    {{ $user->role === 'admin' ? 'Staff Admin Portal' : 'Resident Hub' }}
+                </p>
             </div>
         </div>
 
-        <!-- Resident Identity Card -->
-        <div class="my-4 p-3 bg-blue-50/70 rounded-2xl border border-blue-100/80 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
+        <!-- Identity Card -->
+        <div class="my-4 p-3 {{ $user->role === 'admin' ? 'bg-amber-50/80 border-amber-200/80' : 'bg-blue-50/70 border-blue-100/80' }} rounded-2xl border flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl {{ $user->role === 'admin' ? 'bg-amber-600' : 'bg-blue-600' }} text-white font-extrabold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
                 {{ $user->initials }}
             </div>
             <div class="overflow-hidden flex-1">
                 <p class="text-xs font-bold text-slate-900 truncate">{{ $user->name }}</p>
-                <p class="text-[10px] text-blue-700 font-mono font-medium">{{ $user->barangay_id ?? 'BRGY-RESIDENT' }}</p>
+                <p class="text-[10px] {{ $user->role === 'admin' ? 'text-amber-700' : 'text-blue-700' }} font-mono font-medium">{{ $user->barangay_id ?? 'BRGY-0001' }}</p>
                 <div class="flex items-center gap-1.5 mt-0.5">
                     <span class="w-1.5 h-1.5 rounded-full {{ $user->role === 'admin' ? 'bg-amber-500' : 'bg-emerald-500' }} animate-pulse"></span>
-                    <span class="text-[10px] text-slate-500 font-medium">{{ $user->role === 'admin' ? 'Barangay Staff / Admin' : 'Online Resident' }}</span>
+                    <span class="text-[10px] text-slate-600 font-medium">{{ $user->role === 'admin' ? 'Barangay Staff / Admin' : 'Online Resident' }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- New Post Action Button -->
-        <button onclick="switchScreen('post')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-2 mb-4 cursor-pointer">
-            <i class="fas fa-plus-circle"></i> Create Post
-        </button>
+        <!-- Primary Action Button -->
+        @if($user->role === 'admin')
+            <button onclick="switchScreen('admin-broadcast')" class="w-full bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-2 mb-3 cursor-pointer">
+                <i class="fas fa-bullhorn"></i> Broadcast Advisory
+            </button>
+        @else
+            <button onclick="switchScreen('post')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-2 mb-3 cursor-pointer">
+                <i class="fas fa-plus-circle"></i> Create Post
+            </button>
+        @endif
 
         <!-- Navigation Menu -->
         <nav class="space-y-1 flex-1">
-            <button onclick="switchScreen('home')" id="sidebar-nav-home" class="sidebar-nav-item active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 transition cursor-pointer">
-                <i class="fas fa-newspaper w-4 text-center"></i>
+            @if($user->role === 'admin')
+                <!-- ADMIN / STAFF EXCLUSIVE MANAGEMENT MENU -->
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-lg mb-1 flex items-center gap-1">
+                    <i class="fas fa-shield-alt"></i> Staff Administration
+                </p>
+
+                <button onclick="switchScreen('admin-overview')" id="sidebar-nav-admin-overview" class="sidebar-nav-item active w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-chart-pie w-4 text-center text-amber-600"></i> Executive Overview</span>
+                </button>
+
+                <button onclick="switchScreen('admin-documents')" id="sidebar-nav-admin-documents" class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-file-invoice w-4 text-center text-blue-600"></i> Document Requests</span>
+                    @if(isset($adminData['stats']['pending_documents']) && $adminData['stats']['pending_documents'] > 0)
+                        <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $adminData['stats']['pending_documents'] }}</span>
+                    @endif
+                </button>
+
+                <button onclick="switchScreen('admin-relief')" id="sidebar-nav-admin-relief" class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-truck-loading w-4 text-center text-red-600"></i> Relief Operations</span>
+                    @if(isset($adminData['stats']['pending_relief']) && $adminData['stats']['pending_relief'] > 0)
+                        <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $adminData['stats']['pending_relief'] }}</span>
+                    @endif
+                </button>
+
+                <button onclick="switchScreen('admin-scholar')" id="sidebar-nav-admin-scholar" class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-user-graduate w-4 text-center text-amber-600"></i> Scholarships</span>
+                    <span class="text-[10px] text-slate-400 font-mono">({{ $adminData['stats']['total_scholarships'] ?? 0 }})</span>
+                </button>
+
+                <button onclick="switchScreen('admin-jobs')" id="sidebar-nav-admin-jobs" class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-users-cog w-4 text-center text-purple-600"></i> Job Applicants</span>
+                    <span class="text-[10px] text-slate-400 font-mono">({{ $adminData['stats']['total_jobs'] ?? 0 }})</span>
+                </button>
+
+                <button onclick="switchScreen('admin-residents')" id="sidebar-nav-admin-residents" class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-address-book w-4 text-center text-emerald-600"></i> Resident Registry</span>
+                </button>
+
+                <div class="pt-2 my-1 border-t border-slate-200"></div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-0.5">Community Views</p>
+            @endif
+
+            <!-- STANDARD COMMUNITY VIEWS (ACCESSIBLE TO RESIDENTS AND STAFF) -->
+            <button onclick="switchScreen('home')" id="sidebar-nav-home" class="sidebar-nav-item {{ $user->role === 'resident' ? 'active' : '' }} w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
+                <i class="fas fa-newspaper w-4 text-center text-blue-600"></i>
                 <span>Community Feed</span>
             </button>
-            <button onclick="switchScreen('health')" id="sidebar-nav-health" class="sidebar-nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
+            <button onclick="switchScreen('health')" id="sidebar-nav-health" class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
                 <i class="fas fa-heartbeat w-4 text-center text-green-600"></i>
                 <span>Health Records</span>
             </button>
-            <button onclick="switchScreen('jobs')" id="sidebar-nav-jobs" class="sidebar-nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
+            <button onclick="switchScreen('jobs')" id="sidebar-nav-jobs" class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
                 <i class="fas fa-briefcase w-4 text-center text-purple-600"></i>
                 <span>Job Openings</span>
             </button>
-            <button onclick="switchScreen('scholar')" id="sidebar-nav-scholar" class="sidebar-nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
+            <button onclick="switchScreen('scholar')" id="sidebar-nav-scholar" class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
                 <i class="fas fa-graduation-cap w-4 text-center text-amber-600"></i>
                 <span>Scholarship</span>
             </button>
-            <button onclick="switchScreen('relief')" id="sidebar-nav-relief" class="sidebar-nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
+            <button onclick="switchScreen('relief')" id="sidebar-nav-relief" class="sidebar-nav-item w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition cursor-pointer">
                 <i class="fas fa-hand-holding-heart w-4 text-center text-red-500"></i>
                 <span>Disaster Relief</span>
             </button>
         </nav>
 
         <!-- Sidebar Footer Utility Actions -->
-        <div class="pt-4 border-t border-slate-100 space-y-1">
+        <div class="pt-3 border-t border-slate-100 space-y-1">
             <button onclick="openModal('emergencyModal')" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer">
                 <i class="fas fa-phone-alt text-red-500 w-4 text-center"></i>
                 <span>Emergency Hotlines</span>
@@ -157,13 +208,21 @@
                 <img src="{{ asset('1.jpg') }}" alt="Barangay Logo" class="w-9 h-9 rounded-full object-cover border border-blue-600 shadow-xs">
                 <div>
                     <h1 class="text-sm font-bold text-blue-950 leading-tight">Brgy. San Agustin</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Resident Hub</p>
+                    <p class="text-[10px] text-slate-500 font-medium">
+                        {{ $user->role === 'admin' ? 'Staff Admin' : 'Resident Hub' }}
+                    </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="switchScreen('relief')" class="p-2 text-red-500 hover:bg-red-50 rounded-xl cursor-pointer" title="Relief Desk">
-                    <i class="fas fa-hand-holding-heart text-base"></i>
-                </button>
+                @if($user->role === 'admin')
+                    <button onclick="switchScreen('admin-overview')" class="text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-1.5 rounded-xl cursor-pointer flex items-center gap-1">
+                        <i class="fas fa-shield-alt"></i> Staff
+                    </button>
+                @else
+                    <button onclick="switchScreen('relief')" class="p-2 text-red-500 hover:bg-red-50 rounded-xl cursor-pointer" title="Relief">
+                        <i class="fas fa-hand-holding-heart text-base"></i>
+                    </button>
+                @endif
                 <button onclick="openModal('emergencyModal')" class="p-2 text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer" title="Hotlines">
                     <i class="fas fa-phone-alt text-sm"></i>
                 </button>
@@ -176,7 +235,7 @@
                     <div id="userDropdown" class="hidden absolute right-0 top-11 bg-white rounded-2xl shadow-xl border border-slate-100 w-52 z-50 overflow-hidden py-1">
                         <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50">
                             <p class="text-xs font-bold text-slate-800 truncate">{{ $user->name }}</p>
-                            <p class="text-[10px] text-blue-700 font-mono">{{ $user->barangay_id ?? 'BRGY-RESIDENT' }}</p>
+                            <p class="text-[10px] text-blue-700 font-mono">{{ $user->barangay_id ?? 'BRGY-0001' }}</p>
                         </div>
                         <a href="{{ route('home') }}" class="block px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2">
                             <i class="fas fa-globe text-slate-400"></i> Barangay Website
@@ -195,14 +254,19 @@
         <!-- Desktop Top Header Bar (Website mode status & quick links) -->
         <header class="hidden md:flex bg-white border-b border-slate-200 px-8 py-3.5 items-center justify-between sticky top-0 z-20 shadow-2xs">
             <div class="flex items-center gap-3">
-                <span id="desktop-screen-badge" class="px-3.5 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-100">
-                    Community Feed
+                <span id="desktop-screen-badge" class="px-3.5 py-1 rounded-full text-xs font-extrabold {{ $user->role === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-100' }}">
+                    {{ $user->role === 'admin' ? 'Executive Overview' : 'Community Feed' }}
                 </span>
-                <span class="text-xs text-slate-500 font-medium">Logged in as <strong class="text-slate-800">{{ $user->name }}</strong> · <span class="font-mono text-blue-700">{{ $user->barangay_id ?? 'BRGY-RESIDENT' }}</span></span>
+                <span class="text-xs text-slate-500 font-medium">Logged in as <strong class="text-slate-800">{{ $user->name }}</strong> · <span class="font-mono text-blue-700">{{ $user->barangay_id ?? 'BRGY-0001' }}</span></span>
             </div>
             <div class="flex items-center gap-3">
+                @if($user->role === 'admin')
+                    <button onclick="switchScreen('admin-broadcast')" class="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer border border-amber-200">
+                        <i class="fas fa-bullhorn text-amber-600"></i> Broadcast Notice
+                    </button>
+                @endif
                 <button onclick="switchScreen('relief')" class="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer border border-red-100">
-                    <i class="fas fa-hand-holding-heart"></i> Disaster Relief Desk
+                    <i class="fas fa-hand-holding-heart"></i> Relief Operations
                 </button>
                 <button onclick="openModal('emergencyModal')" class="text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
                     <i class="fas fa-phone-alt text-red-500"></i> Hotlines
@@ -213,10 +277,432 @@
         <!-- Main Screen Body -->
         <main class="flex-1 p-4 md:p-8 max-w-4xl w-full mx-auto pb-24 md:pb-12">
 
+            @if($user->role === 'admin' && isset($adminData))
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 1: EXECUTIVE CONSOLE OVERVIEW     -->
+                <!-- ============================================== -->
+                <div id="screen-admin-overview" class="screen-view space-y-4">
+                    <!-- Executive Welcome Header -->
+                    <div class="rounded-3xl p-6 text-white shadow-md relative overflow-hidden" style="background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #d97706 100%) !important; background-color: #b45309 !important;">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white/20 text-white uppercase tracking-wider backdrop-blur-xs">
+                                <span class="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span> Staff Management Console
+                            </span>
+                            <span class="text-xs font-mono text-amber-200">BRGY-SAN-AGUSTIN-ADMIN</span>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-white mt-2">Barangay Operations Command Center</h2>
+                        <p class="text-xs text-amber-100 mt-0.5">Manage resident document clearances, disaster relief dispatches, scholarship allocations, and job applications in real-time.</p>
+                    </div>
+
+                    <!-- 4 Main KPI Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Registered Residents</span>
+                            <p class="text-2xl font-black text-slate-900 mt-1">{{ $adminData['stats']['total_residents'] }}</p>
+                            <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-check-circle"></i> Active Registry
+                            </span>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs cursor-pointer hover:border-blue-400 transition" onclick="switchScreen('admin-documents')">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Document Clearances</span>
+                            <p class="text-2xl font-black text-blue-600 mt-1">{{ $adminData['stats']['pending_documents'] }}</p>
+                            <span class="text-[10px] text-blue-600 font-semibold flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-clock"></i> Pending Validation
+                            </span>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs cursor-pointer hover:border-red-400 transition" onclick="switchScreen('admin-relief')">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Disaster Relief</span>
+                            <p class="text-2xl font-black text-red-600 mt-1">{{ $adminData['stats']['pending_relief'] }}</p>
+                            <span class="text-[10px] text-red-600 font-semibold flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-exclamation-triangle"></i> Pending Dispatch
+                            </span>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs cursor-pointer hover:border-amber-400 transition" onclick="switchScreen('admin-scholar')">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Scholarship Grants</span>
+                            <p class="text-2xl font-black text-amber-600 mt-1">{{ $adminData['stats']['total_scholarships'] }}</p>
+                            <span class="text-[10px] text-amber-700 font-semibold flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-graduation-cap"></i> Student Applicants
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Staff Quick Actions -->
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Management Quick Actions</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <button onclick="switchScreen('admin-documents')" class="p-3 bg-blue-50/70 hover:bg-blue-100 text-blue-800 rounded-xl text-xs font-bold transition text-left flex items-center gap-2 cursor-pointer">
+                                <i class="fas fa-file-check text-blue-600"></i> Review Documents
+                            </button>
+                            <button onclick="switchScreen('admin-relief')" class="p-3 bg-red-50/70 hover:bg-red-100 text-red-800 rounded-xl text-xs font-bold transition text-left flex items-center gap-2 cursor-pointer">
+                                <i class="fas fa-truck-fast text-red-600"></i> Dispatch Relief
+                            </button>
+                            <button onclick="switchScreen('admin-scholar')" class="p-3 bg-amber-50/70 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition text-left flex items-center gap-2 cursor-pointer">
+                                <i class="fas fa-award text-amber-600"></i> Grant Scholarship
+                            </button>
+                            <button onclick="switchScreen('admin-broadcast')" class="p-3 bg-purple-50/70 hover:bg-purple-100 text-purple-800 rounded-xl text-xs font-bold transition text-left flex items-center gap-2 cursor-pointer">
+                                <i class="fas fa-bullhorn text-purple-600"></i> Post Advisory
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Summary Table -->
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                <i class="fas fa-list-check text-blue-600"></i> Pending Clearances & Service Submissions
+                            </h3>
+                            <button onclick="switchScreen('admin-documents')" class="text-xs font-bold text-blue-600 hover:underline">View All</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
+                                    <tr>
+                                        <th class="p-3 rounded-l-xl">Requester</th>
+                                        <th class="p-3">Service Type</th>
+                                        <th class="p-3">Purpose</th>
+                                        <th class="p-3">Status</th>
+                                        <th class="p-3 rounded-r-xl">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @forelse($adminData['service_requests']->take(5) as $req)
+                                        <tr id="req-row-{{ $req->id }}">
+                                            <td class="p-3 font-bold text-slate-800">{{ $req->full_name ?? ($req->user->name ?? 'Resident') }}</td>
+                                            <td class="p-3 font-semibold text-blue-700">{{ $req->service_type }}</td>
+                                            <td class="p-3 text-slate-600 max-w-xs truncate">{{ $req->purpose ?? 'General requirement' }}</td>
+                                            <td class="p-3">
+                                                <span class="status-badge px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $req->status === 'Pending' ? 'bg-amber-100 text-amber-800' : ($req->status === 'Ready for Pick-up' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800') }}">
+                                                    {{ $req->status }}
+                                                </span>
+                                            </td>
+                                            <td class="p-3">
+                                                <button onclick="updateDocStatus({{ $req->id }}, 'Ready for Pick-up')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-lg font-bold text-[10px] transition cursor-pointer">
+                                                    Approve & Ready
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="p-4 text-center text-slate-400">No service requests currently submitted.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 2: DOCUMENT CLEARANCES MANAGER     -->
+                <!-- ============================================== -->
+                <div id="screen-admin-documents" class="screen-view space-y-4 hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchScreen('admin-overview')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-file-invoice text-blue-600"></i> Resident Document Clearances
+                                </h2>
+                                <p class="text-xs text-slate-500">Approve, process, and issue barangay clearances & indigency certificates</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($adminData['service_requests'] as $req)
+                            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs" id="doc-card-{{ $req->id }}">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div>
+                                        <span class="text-xs font-bold text-blue-700">{{ $req->service_type }}</span>
+                                        <h3 class="font-bold text-sm text-slate-900 mt-0.5">{{ $req->full_name ?? ($req->user->name ?? 'Resident') }}</h3>
+                                    </div>
+                                    <span id="doc-badge-{{ $req->id }}" class="self-start px-2.5 py-1 rounded-full text-xs font-bold {{ $req->status === 'Pending' ? 'bg-amber-100 text-amber-800' : ($req->status === 'Ready for Pick-up' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800') }}">
+                                        {{ $req->status }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-600 space-y-1 mb-3">
+                                    <p><strong>Contact:</strong> {{ $req->contact_number ?? ($req->user->phone ?? 'N/A') }}</p>
+                                    <p><strong>Purpose:</strong> {{ $req->purpose ?? 'General employment / residency requirement' }}</p>
+                                    <p class="text-slate-400 text-[11px]"><i class="fas fa-calendar mr-1"></i> Requested: {{ $req->created_at->format('M d, Y h:i A') }}</p>
+                                </div>
+                                <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                                    <button onclick="updateDocStatus({{ $req->id }}, 'Ready for Pick-up')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-check mr-1"></i> Ready for Pick-up
+                                    </button>
+                                    <button onclick="updateDocStatus({{ $req->id }}, 'Issued')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-stamp mr-1"></i> Mark Issued
+                                    </button>
+                                    <button onclick="updateDocStatus({{ $req->id }}, 'Rejected')" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ml-auto">
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="bg-white rounded-3xl p-8 text-center text-slate-400">
+                                <i class="fas fa-inbox text-3xl mb-2"></i>
+                                <p class="text-xs font-semibold">No document requests in system.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 3: RELIEF OPERATIONS DESK         -->
+                <!-- ============================================== -->
+                <div id="screen-admin-relief" class="screen-view space-y-4 hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchScreen('admin-overview')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-truck-loading text-red-600"></i> Disaster Relief Dispatch Console
+                                </h2>
+                                <p class="text-xs text-slate-500">Approve and deploy food packs, shelter kits, and medical aid</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($adminData['relief_requests'] as $relief)
+                            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs" id="relief-card-{{ $relief->id }}">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div>
+                                        <span class="text-xs font-bold text-red-600"><i class="fas fa-hand-holding-heart mr-1"></i> {{ $relief->assistance_type }}</span>
+                                        <h3 class="font-bold text-sm text-slate-900 mt-0.5">{{ $relief->user->name ?? 'Resident' }}</h3>
+                                    </div>
+                                    <span id="relief-badge-{{ $relief->id }}" class="self-start px-2.5 py-1 rounded-full text-xs font-bold {{ $relief->status === 'Pending' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800' }}">
+                                        {{ $relief->status }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-600 space-y-1 mb-3">
+                                    <p><strong>Resident Address / Location:</strong> {{ $relief->user->address ?? 'Barangay San Agustin' }}</p>
+                                    <p><strong>Details / Situation:</strong> {{ $relief->details ?? 'Emergency relief aid request' }}</p>
+                                    <p class="text-slate-400 text-[11px]"><i class="fas fa-clock mr-1"></i> Logged: {{ $relief->created_at->diffForHumans() }}</p>
+                                </div>
+                                <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                                    <button onclick="updateReliefStatus({{ $relief->id }}, 'Dispatched')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-truck-fast mr-1"></i> Approve & Dispatch
+                                    </button>
+                                    <button onclick="updateReliefStatus({{ $relief->id }}, 'Delivered')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-check-double mr-1"></i> Mark Delivered
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="bg-white rounded-3xl p-8 text-center text-slate-400">
+                                <i class="fas fa-box-open text-3xl mb-2"></i>
+                                <p class="text-xs font-semibold">No pending disaster relief requests.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 4: SCHOLARSHIP GRANTS MANAGER     -->
+                <!-- ============================================== -->
+                <div id="screen-admin-scholar" class="screen-view space-y-4 hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchScreen('admin-overview')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-user-graduate text-amber-600"></i> Scholarship Applications Review
+                                </h2>
+                                <p class="text-xs text-slate-500">Review student eligibility and grant educational assistance</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($adminData['scholarship_applications'] as $sch)
+                            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs" id="sch-card-{{ $sch->id }}">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div>
+                                        <h3 class="font-bold text-sm text-slate-900">{{ $sch->user->name ?? 'Student Applicant' }}</h3>
+                                        <p class="text-xs text-slate-500">{{ $sch->user->email ?? '' }} · {{ $sch->user->phone ?? '' }}</p>
+                                    </div>
+                                    <span id="sch-badge-{{ $sch->id }}" class="self-start px-2.5 py-1 rounded-full text-xs font-bold {{ $sch->status === 'Submitted' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
+                                        {{ $sch->status }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-600 mb-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <p class="font-mono text-[11px]">{{ $sch->notes ?? 'Application submitted through portal' }}</p>
+                                </div>
+                                <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                    <button onclick="updateScholarStatus({{ $sch->id }}, 'Granted')" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-award mr-1"></i> Grant Scholarship
+                                    </button>
+                                    <button onclick="updateScholarStatus({{ $sch->id }}, 'Declined')" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ml-auto">
+                                        Decline
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="bg-white rounded-3xl p-8 text-center text-slate-400">
+                                <i class="fas fa-graduation-cap text-3xl mb-2"></i>
+                                <p class="text-xs font-semibold">No scholarship submissions yet.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 5: JOB APPLICANTS MANAGER         -->
+                <!-- ============================================== -->
+                <div id="screen-admin-jobs" class="screen-view space-y-4 hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchScreen('admin-overview')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-users-cog text-purple-600"></i> Barangay Job Applicants
+                                </h2>
+                                <p class="text-xs text-slate-500">Manage candidate applications and schedule interviews</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($adminData['job_applications'] as $jobApp)
+                            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs" id="job-app-card-{{ $jobApp->id }}">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                    <div>
+                                        <span class="text-xs font-bold text-purple-700">{{ $jobApp->job_title }}</span>
+                                        <h3 class="font-bold text-sm text-slate-900 mt-0.5">{{ $jobApp->user->name ?? 'Applicant' }}</h3>
+                                    </div>
+                                    <span id="job-badge-{{ $jobApp->id }}" class="self-start px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                                        {{ $jobApp->status }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-600 mb-3">
+                                    <p><strong>Contact Phone:</strong> {{ $jobApp->user->phone ?? 'N/A' }}</p>
+                                    <p><strong>Resident Address:</strong> {{ $jobApp->user->address ?? 'San Agustin' }}</p>
+                                </div>
+                                <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                    <button onclick="updateJobStatus({{ $jobApp->id }}, 'Interview Scheduled')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-calendar mr-1"></i> Schedule Interview
+                                    </button>
+                                    <button onclick="updateJobStatus({{ $jobApp->id }}, 'Approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                                        <i class="fas fa-check mr-1"></i> Hire / Approve
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="bg-white rounded-3xl p-8 text-center text-slate-400">
+                                <i class="fas fa-briefcase text-3xl mb-2"></i>
+                                <p class="text-xs font-semibold">No job applications submitted yet.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 6: RESIDENT REGISTRY DIRECTORY    -->
+                <!-- ============================================== -->
+                <div id="screen-admin-residents" class="screen-view space-y-4 hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchScreen('admin-overview')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-address-book text-emerald-600"></i> Barangay Resident Registry
+                                </h2>
+                                <p class="text-xs text-slate-500">Official master list of registered residents in San Agustin</p>
+                            </div>
+                        </div>
+                        <input type="text" id="residentSearchInput" onkeyup="filterResidentRegistry()" placeholder="Search resident or ID..." 
+                               class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-400 focus:outline-none">
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs overflow-x-auto">
+                        <table class="w-full text-xs text-left" id="residentsTable">
+                            <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
+                                <tr>
+                                    <th class="p-3 rounded-l-xl">Barangay ID</th>
+                                    <th class="p-3">Full Name</th>
+                                    <th class="p-3">Email & Phone</th>
+                                    <th class="p-3">Address</th>
+                                    <th class="p-3 rounded-r-xl">Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach($adminData['residents'] as $res)
+                                    <tr class="resident-row">
+                                        <td class="p-3 font-mono font-bold text-blue-700">{{ $res->barangay_id ?? 'BRGY-0000' }}</td>
+                                        <td class="p-3 font-bold text-slate-900">{{ $res->name }}</td>
+                                        <td class="p-3 text-slate-600">
+                                            <p>{{ $res->email }}</p>
+                                            <p class="text-slate-400 text-[11px]">{{ $res->phone ?? 'No phone' }}</p>
+                                        </td>
+                                        <td class="p-3 text-slate-600">{{ $res->address ?? 'San Agustin' }}</td>
+                                        <td class="p-3 text-slate-400">{{ $res->created_at->format('M d, Y') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- ADMIN SCREEN 7: OFFICIAL BROADCAST POSTER      -->
+                <!-- ============================================== -->
+                <div id="screen-admin-broadcast" class="screen-view space-y-4 hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button onclick="switchScreen('admin-overview')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-bullhorn text-amber-600"></i> Broadcast Official Barangay Notice
+                                </h2>
+                                <p class="text-xs text-slate-500">Post an official advisory visible to all residents across the community feed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+                        <form onsubmit="handleBroadcastSubmit(event)" class="space-y-4">
+                            @csrf
+                            <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200/80 text-amber-900 text-xs">
+                                <p class="font-bold flex items-center gap-1.5"><i class="fas fa-shield-alt"></i> Official Barangay Broadcast</p>
+                                <p class="mt-0.5">This post will automatically be published under <strong>{{ $user->name }} (Barangay Administration)</strong> with priority announcement formatting.</p>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-bold text-slate-700 block mb-1">Advisory Content *</label>
+                                <textarea id="broadcastContent" rows="6" required placeholder="Type official notice (e.g. Schedule of free rabies vaccination, road repairs, curfew guidelines, medical mission details)..." 
+                                          class="w-full border border-slate-200 p-4 rounded-2xl text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none transition resize-none"></textarea>
+                            </div>
+
+                            <button type="submit" id="broadcastBtn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fas fa-bullhorn"></i> Broadcast to All Residents
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
+
             <!-- ============================================== -->
-            <!-- SCREEN 1: HOME & COMMUNITY FEED                -->
+            <!-- STANDARD COMMUNITY SCREENS (RESIDENT & STAFF)  -->
             <!-- ============================================== -->
-            <div id="screen-home" class="screen-view space-y-4">
+
+            <!-- SCREEN: HOME & COMMUNITY FEED -->
+            <div id="screen-home" class="screen-view space-y-4 {{ $user->role === 'admin' ? 'hidden' : '' }}">
                 <!-- Welcome Banner -->
                 <div class="welcome-gradient rounded-3xl p-5 sm:p-6 shadow-md relative overflow-hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%) !important; background-color: #1e3a8a !important; color: #ffffff !important;">
                     <div class="absolute -right-8 -top-8 w-36 h-36 bg-white/10 rounded-full blur-xl"></div>
@@ -224,7 +710,8 @@
                     <div class="relative z-10">
                         <div class="flex items-center justify-between">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white uppercase tracking-wider backdrop-blur-xs">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $user->role === 'admin' ? 'bg-amber-300' : 'bg-emerald-400' }} animate-pulse"></span> {{ $user->role === 'admin' ? 'Barangay Staff / Administrator' : 'Verified Resident' }}
+                                <span class="w-1.5 h-1.5 rounded-full {{ $user->role === 'admin' ? 'bg-amber-300' : 'bg-emerald-400' }} animate-pulse"></span> 
+                                {{ $user->role === 'admin' ? 'Barangay Staff / Administrator' : 'Verified Resident' }}
                             </span>
                             <span class="text-xs text-blue-100 font-mono">{{ $user->barangay_id ?? 'BRGY-001' }}</span>
                         </div>
@@ -238,7 +725,9 @@
                                 <p class="text-[10px] sm:text-xs text-blue-200">Community Posts</p>
                             </div>
                             <div class="bg-white/15 rounded-2xl p-2.5 text-center">
-                                <p class="text-base sm:text-lg font-bold text-emerald-300">Active</p>
+                                <p class="text-base sm:text-lg font-bold {{ $user->role === 'admin' ? 'text-amber-300' : 'text-emerald-300' }}">
+                                    {{ $user->role === 'admin' ? 'Staff Active' : 'Active' }}
+                                </p>
                                 <p class="text-[10px] sm:text-xs text-blue-200">Portal Status</p>
                             </div>
                             <div class="bg-white/15 rounded-2xl p-2.5 text-center">
@@ -324,15 +813,11 @@
                 </div>
             </div>
 
-
-            <!-- ============================================== -->
-            <!-- SCREEN 2: HEALTH & CLINIC RECORDS SCREEN       -->
-            <!-- ============================================== -->
+            <!-- SCREEN: HEALTH & CLINIC RECORDS -->
             <div id="screen-health" class="screen-view space-y-4 hidden">
-                <!-- Screen Header -->
                 <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back to Feed">
+                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div>
@@ -347,7 +832,6 @@
                     </span>
                 </div>
 
-                <!-- Health Information Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
                         <p class="text-xs font-semibold text-slate-500">Doctor On Duty</p>
@@ -366,7 +850,6 @@
                     </div>
                 </div>
 
-                <!-- Health Log Entry Form -->
                 <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
                     <h3 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
                         <i class="fas fa-notes-medical text-green-600"></i> Log Your Vital Signs & Consultation
@@ -402,28 +885,13 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Health Center Advisories -->
-                <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-200/80 text-emerald-900">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-bullhorn text-emerald-600 text-lg mt-0.5"></i>
-                        <div>
-                            <p class="font-bold text-sm">Monthly Immunization & Senior Wellness</p>
-                            <p class="text-xs text-emerald-800 mt-1">Free flu vaccination and pediatric immunization happens every Wednesday at the Barangay Hall 2nd Floor. Bring your Barangay Health Booklet.</p>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-
-            <!-- ============================================== -->
-            <!-- SCREEN 3: JOB OPENINGS & LIVELIHOOD SCREEN     -->
-            <!-- ============================================== -->
+            <!-- SCREEN: JOB OPENINGS -->
             <div id="screen-jobs" class="screen-view space-y-4 hidden">
-                <!-- Screen Header -->
                 <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back to Feed">
+                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div>
@@ -433,14 +901,9 @@
                             <p class="text-xs text-slate-500">Community employment opportunities & PESO livelihood partnerships</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 self-start sm:self-auto">
-                        4 Active Postings
-                    </span>
                 </div>
 
-                <!-- Job Listings Cards -->
                 <div class="space-y-3">
-                    <!-- Job Card 1 -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-purple-300 transition">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                             <div>
@@ -464,7 +927,6 @@
                         </div>
                     </div>
 
-                    <!-- Job Card 2 -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-purple-300 transition">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                             <div>
@@ -487,66 +949,14 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Job Card 3 -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-purple-300 transition">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base">Disaster Response Volunteer / Responder</h3>
-                                <p class="text-xs text-slate-500 mt-0.5">BDRRMC Rescue Headquarters · Operations Team</p>
-                            </div>
-                            <span class="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full self-start">Allowance + Training</span>
-                        </div>
-                        <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                            Certified first-aid and emergency rescue training provided by CDRRMO. Serve on call during flood alerts, typhoons, and community safety drills with monthly meal and duty allowance.
-                        </p>
-                        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                            <div class="flex items-center gap-2 text-xs text-slate-400">
-                                <span><i class="fas fa-shield-alt mr-1"></i> Emergency Service</span>
-                                <span>•</span>
-                                <span><i class="fas fa-certificate mr-1"></i> Free Certification</span>
-                            </div>
-                            <button onclick="applyJob('Disaster Response Volunteer / Responder')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-xs cursor-pointer">
-                                Apply Now
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Job Card 4 -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-purple-300 transition">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base">Eco-Aide & Waste Management Officer</h3>
-                                <p class="text-xs text-slate-500 mt-0.5">Barangay Clean & Green Taskforce</p>
-                            </div>
-                            <span class="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full self-start">₱11,000 / month</span>
-                        </div>
-                        <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                            Maintain street cleanliness, monitor segregation schedules per purok, and support community tree planting and MRF recycling programs.
-                        </p>
-                        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                            <div class="flex items-center gap-2 text-xs text-slate-400">
-                                <span><i class="fas fa-leaf mr-1"></i> Environmental</span>
-                                <span>•</span>
-                                <span><i class="fas fa-users mr-1"></i> Team Work</span>
-                            </div>
-                            <button onclick="applyJob('Eco-Aide & Waste Management Officer')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-xs cursor-pointer">
-                                Apply Now
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-
-            <!-- ============================================== -->
-            <!-- SCREEN 4: SCHOLARSHIP ASSISTANCE SCREEN        -->
-            <!-- ============================================== -->
+            <!-- SCREEN: SCHOLARSHIP PROGRAM -->
             <div id="screen-scholar" class="screen-view space-y-4 hidden">
-                <!-- Screen Header -->
                 <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back to Feed">
+                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div>
@@ -561,7 +971,7 @@
                     </span>
                 </div>
 
-                <!-- Grant Highlights Card (GUARANTEED HIGH CONTRAST) -->
+                <!-- Grant Highlights Card (GUARANTEED VISIBLE) -->
                 <div class="card-gradient-amber rounded-3xl p-6 text-white shadow-md relative overflow-hidden" 
                      style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; background-color: #d97706 !important; color: #ffffff !important;">
                     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -573,31 +983,6 @@
                         <div class="bg-black/25 backdrop-blur-xs rounded-2xl p-3.5 text-center sm:min-w-40 border border-white/20">
                             <p class="text-xs font-bold text-amber-200">Eligibility Status</p>
                             <p class="text-sm font-extrabold text-white mt-0.5">Open For Enrollment</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Eligibility Checklist & Guidelines -->
-                <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
-                    <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                        <i class="fas fa-clipboard-check text-yellow-600"></i> Program Eligibility & Requirements
-                    </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600">
-                        <div class="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                            <span>Bonafide resident of Barangay San Agustin for at least 1 continuous year</span>
-                        </div>
-                        <div class="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                            <span>Currently enrolled Senior High School or College undergraduate student</span>
-                        </div>
-                        <div class="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                            <span>General Weighted Average (GWA) of at least 83% (2.25) with no failing grades</span>
-                        </div>
-                        <div class="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
-                            <span>Barangay Certificate of Indigency or low-income household verification</span>
                         </div>
                     </div>
                 </div>
@@ -639,15 +1024,11 @@
                 </div>
             </div>
 
-
-            <!-- ============================================== -->
-            <!-- SCREEN 5: DISASTER RELIEF ASSISTANCE SCREEN    -->
-            <!-- ============================================== -->
+            <!-- SCREEN: DISASTER RELIEF -->
             <div id="screen-relief" class="screen-view space-y-4 hidden">
-                <!-- Screen Header -->
                 <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back to Feed">
+                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Back">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div>
@@ -662,16 +1043,6 @@
                     </span>
                 </div>
 
-                <!-- Priority Notice Banner -->
-                <div class="bg-red-50 border border-red-200/80 rounded-2xl p-4 text-red-900 flex items-start gap-3">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-lg mt-0.5"></i>
-                    <div class="text-xs">
-                        <p class="font-bold text-sm">Emergency Assistance Notice</p>
-                        <p class="mt-0.5">In case of severe typhoons, localized flooding, or fire emergencies, priority relief packages and evacuation transfers are deployed immediately by the Barangay Disaster Risk Reduction team.</p>
-                    </div>
-                </div>
-
-                <!-- Relief Request Form Card -->
                 <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
                     <h3 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
                         <i class="fas fa-box-open text-red-600"></i> Request Relief Assistance
@@ -709,41 +1080,13 @@
                         </button>
                     </form>
                 </div>
-
-                <!-- Direct Hotline Call Cards -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <a href="tel:911" class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center hover:bg-red-50 hover:border-red-200 transition">
-                        <i class="fas fa-ambulance text-red-600 text-xl mb-1 block"></i>
-                        <span class="text-xs font-bold text-slate-800 block">Ambulance</span>
-                        <span class="text-[11px] text-red-600 font-mono font-bold block">911</span>
-                    </a>
-                    <a href="tel:160" class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center hover:bg-orange-50 hover:border-orange-200 transition">
-                        <i class="fas fa-fire-extinguisher text-orange-600 text-xl mb-1 block"></i>
-                        <span class="text-xs font-bold text-slate-800 block">Fire Rescue</span>
-                        <span class="text-[11px] text-orange-600 font-mono font-bold block">160</span>
-                    </a>
-                    <a href="tel:117" class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center hover:bg-blue-50 hover:border-blue-200 transition">
-                        <i class="fas fa-shield-alt text-blue-700 text-xl mb-1 block"></i>
-                        <span class="text-xs font-bold text-slate-800 block">Police Dept</span>
-                        <span class="text-[11px] text-blue-700 font-mono font-bold block">117</span>
-                    </a>
-                    <a href="tel:09081234567" class="bg-white p-3.5 rounded-2xl border border-slate-200/80 text-center hover:bg-slate-100 transition">
-                        <i class="fas fa-phone-alt text-slate-700 text-xl mb-1 block"></i>
-                        <span class="text-xs font-bold text-slate-800 block">Barangay Desk</span>
-                        <span class="text-[11px] text-slate-700 font-mono font-bold block">0908-123-4567</span>
-                    </a>
-                </div>
             </div>
 
-
-            <!-- ============================================== -->
-            <!-- SCREEN 6: CREATE POST SCREEN                   -->
-            <!-- ============================================== -->
+            <!-- SCREEN: CREATE COMMUNITY POST -->
             <div id="screen-post" class="screen-view space-y-4 hidden">
-                <!-- Screen Header -->
                 <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Cancel & Return">
+                        <button onclick="switchScreen('home')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="Cancel">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div>
@@ -755,22 +1098,19 @@
                     </div>
                 </div>
 
-                <!-- Post Composer Form Card -->
                 <div class="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
                     <form onsubmit="handleCreatePost(event)" class="space-y-4">
                         @csrf
-                        <!-- Author Information Header -->
                         <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
                             <div class="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center font-extrabold text-blue-700 text-sm">
                                 {{ $user->initials }}
                             </div>
                             <div>
                                 <p class="font-bold text-sm text-slate-900">{{ $user->name }}</p>
-                                <p class="text-[11px] text-blue-600 font-mono">{{ $user->barangay_id ?? 'BRGY-RESIDENT' }} · Verified Resident</p>
+                                <p class="text-[11px] text-blue-600 font-mono">{{ $user->barangay_id ?? 'BRGY-RESIDENT' }}</p>
                             </div>
                         </div>
 
-                        <!-- Category & Audience Selectors -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label class="text-xs font-bold text-slate-700 block mb-1">Post Category</label>
@@ -790,14 +1130,12 @@
                             </div>
                         </div>
 
-                        <!-- Content Textarea -->
                         <div>
                             <label class="text-xs font-bold text-slate-700 block mb-1">Post Content *</label>
                             <textarea id="postContent" rows="6" required placeholder="What's on your mind? Share news, inquiries, clean-up drives, lost items, or general thoughts with your neighbors..." 
                                       class="w-full border border-slate-200 p-4 rounded-2xl text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:outline-none transition resize-none"></textarea>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="flex items-center justify-between pt-2">
                             <button type="button" onclick="switchScreen('home')" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
                                 Cancel
@@ -818,29 +1156,52 @@
 <!-- BOTTOM NAVIGATION (MOBILE APPS & RESPONSIVE)   -->
 <!-- ============================================== -->
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/90 z-40 shadow-lg md:hidden">
-    <div class="max-w-md mx-auto grid grid-cols-5 h-16">
-        <button id="nav-btn-home" onclick="switchScreen('home')" class="nav-item active flex flex-col items-center justify-center gap-1 border-t-2 border-blue-700 transition cursor-pointer">
-            <i class="nav-icon fas fa-newspaper text-blue-700 text-base"></i>
-            <span class="nav-label text-[10px] text-blue-700 font-bold">Feed</span>
-        </button>
-        <button id="nav-btn-health" onclick="switchScreen('health')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
-            <i class="nav-icon fas fa-heartbeat text-slate-400 text-base"></i>
-            <span class="nav-label text-[10px] text-slate-400">Health</span>
-        </button>
-        <button id="nav-btn-post" onclick="switchScreen('post')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
-            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-sm">
-                <i class="fas fa-plus text-xs"></i>
-            </div>
-            <span class="nav-label text-[10px] text-slate-400">Post</span>
-        </button>
-        <button id="nav-btn-jobs" onclick="switchScreen('jobs')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
-            <i class="nav-icon fas fa-briefcase text-slate-400 text-base"></i>
-            <span class="nav-label text-[10px] text-slate-400">Jobs</span>
-        </button>
-        <button id="nav-btn-scholar" onclick="switchScreen('scholar')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
-            <i class="nav-icon fas fa-graduation-cap text-slate-400 text-base"></i>
-            <span class="nav-label text-[10px] text-slate-400">Scholar</span>
-        </button>
+    <div class="max-w-md mx-auto grid {{ $user->role === 'admin' ? 'grid-cols-5' : 'grid-cols-5' }} h-16">
+        @if($user->role === 'admin')
+            <button id="nav-btn-admin-overview" onclick="switchScreen('admin-overview')" class="nav-item active flex flex-col items-center justify-center gap-1 border-t-2 border-amber-600 transition cursor-pointer">
+                <i class="nav-icon fas fa-chart-pie text-amber-600 text-base"></i>
+                <span class="nav-label text-[10px] text-amber-700 font-bold">Admin</span>
+            </button>
+            <button id="nav-btn-admin-documents" onclick="switchScreen('admin-documents')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-file-invoice text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Docs</span>
+            </button>
+            <button id="nav-btn-home" onclick="switchScreen('home')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-newspaper text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Feed</span>
+            </button>
+            <button id="nav-btn-admin-relief" onclick="switchScreen('admin-relief')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-truck-loading text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Relief</span>
+            </button>
+            <button id="nav-btn-admin-residents" onclick="switchScreen('admin-residents')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-address-book text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Residents</span>
+            </button>
+        @else
+            <button id="nav-btn-home" onclick="switchScreen('home')" class="nav-item active flex flex-col items-center justify-center gap-1 border-t-2 border-blue-700 transition cursor-pointer">
+                <i class="nav-icon fas fa-newspaper text-blue-700 text-base"></i>
+                <span class="nav-label text-[10px] text-blue-700 font-bold">Feed</span>
+            </button>
+            <button id="nav-btn-health" onclick="switchScreen('health')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-heartbeat text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Health</span>
+            </button>
+            <button id="nav-btn-post" onclick="switchScreen('post')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-sm">
+                    <i class="fas fa-plus text-xs"></i>
+                </div>
+                <span class="nav-label text-[10px] text-slate-400">Post</span>
+            </button>
+            <button id="nav-btn-jobs" onclick="switchScreen('jobs')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-briefcase text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Jobs</span>
+            </button>
+            <button id="nav-btn-scholar" onclick="switchScreen('scholar')" class="nav-item flex flex-col items-center justify-center gap-1 border-t-2 border-transparent transition cursor-pointer">
+                <i class="nav-icon fas fa-graduation-cap text-slate-400 text-base"></i>
+                <span class="nav-label text-[10px] text-slate-400">Scholar</span>
+            </button>
+        @endif
     </div>
 </nav>
 
@@ -911,7 +1272,8 @@
     let posts = @json($posts);
     let activeFeedTab = 'recent';
     let currentPostId = null;
-    let currentActiveScreen = 'home';
+    let userRole = "{{ $user->role }}";
+    let currentActiveScreen = (userRole === 'admin') ? 'admin-overview' : 'home';
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -935,6 +1297,13 @@
     // SCREEN NAVIGATION SWITCHER (DESKTOP SIDEBAR + MOBILE NAV)
     // ==============================================
     const screenTitles = {
+        'admin-overview': 'Staff Administration Console',
+        'admin-documents': 'Document Clearance Requests',
+        'admin-relief': 'Disaster Relief Operations Desk',
+        'admin-scholar': 'Scholarship Grants Review',
+        'admin-jobs': 'Job Applicants Management',
+        'admin-residents': 'Barangay Resident Registry',
+        'admin-broadcast': 'Broadcast Official Advisory',
         'home': 'Community Feed',
         'health': 'Health & Clinic Records',
         'jobs': 'Job Openings & Livelihood',
@@ -974,32 +1343,34 @@
 
         // Update Mobile Bottom Nav highlights
         document.querySelectorAll('.nav-item').forEach(btn => {
-            btn.classList.remove('active', 'border-blue-700');
+            btn.classList.remove('active', 'border-blue-700', 'border-amber-600');
             btn.classList.add('border-transparent');
             const icon = btn.querySelector('.nav-icon');
             const label = btn.querySelector('.nav-label');
             if (icon) {
-                icon.classList.remove('text-blue-700');
+                icon.classList.remove('text-blue-700', 'text-amber-600');
                 icon.classList.add('text-slate-400');
             }
             if (label) {
-                label.classList.remove('text-blue-700', 'font-bold');
+                label.classList.remove('text-blue-700', 'text-amber-700', 'font-bold');
                 label.classList.add('text-slate-400');
             }
         });
 
         const activeMobileBtn = document.getElementById('nav-btn-' + screenName);
         if (activeMobileBtn) {
-            activeMobileBtn.classList.add('active', 'border-blue-700');
+            const borderCol = (userRole === 'admin') ? 'border-amber-600' : 'border-blue-700';
+            const textCol = (userRole === 'admin') ? 'text-amber-600' : 'text-blue-700';
+            activeMobileBtn.classList.add('active', borderCol);
             activeMobileBtn.classList.remove('border-transparent');
             const icon = activeMobileBtn.querySelector('.nav-icon');
             const label = activeMobileBtn.querySelector('.nav-label');
             if (icon) {
-                icon.classList.add('text-blue-700');
+                icon.classList.add(textCol);
                 icon.classList.remove('text-slate-400');
             }
             if (label) {
-                label.classList.add('text-blue-700', 'font-bold');
+                label.classList.add(textCol, 'font-bold');
                 label.classList.remove('text-slate-400');
             }
         }
@@ -1009,6 +1380,150 @@
 
         // Smooth scroll to top of page
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==============================================
+    // ADMIN ACTIONS (STATUS UPDATES & BROADCASTS)
+    // ==============================================
+    async function updateDocStatus(id, newStatus) {
+        try {
+            const res = await fetch(`/admin/requests/${id}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message);
+                const badge = document.getElementById(`doc-badge-${id}`);
+                if (badge) {
+                    badge.innerText = newStatus;
+                    badge.className = `self-start px-2.5 py-1 rounded-full text-xs font-bold ${newStatus === 'Issued' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`;
+                }
+            }
+        } catch (e) {
+            showToast('Failed to update status', 'error');
+        }
+    }
+
+    async function updateReliefStatus(id, newStatus) {
+        try {
+            const res = await fetch(`/admin/relief/${id}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message);
+                const badge = document.getElementById(`relief-badge-${id}`);
+                if (badge) {
+                    badge.innerText = newStatus;
+                    badge.className = `self-start px-2.5 py-1 rounded-full text-xs font-bold ${newStatus === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`;
+                }
+            }
+        } catch (e) {
+            showToast('Failed to update relief status', 'error');
+        }
+    }
+
+    async function updateJobStatus(id, newStatus) {
+        try {
+            const res = await fetch(`/admin/jobs/${id}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message);
+                const badge = document.getElementById(`job-badge-${id}`);
+                if (badge) badge.innerText = newStatus;
+            }
+        } catch (e) {
+            showToast('Failed to update job application', 'error');
+        }
+    }
+
+    async function updateScholarStatus(id, newStatus) {
+        try {
+            const res = await fetch(`/admin/scholarships/${id}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message);
+                const badge = document.getElementById(`sch-badge-${id}`);
+                if (badge) {
+                    badge.innerText = newStatus;
+                    badge.className = `self-start px-2.5 py-1 rounded-full text-xs font-bold ${newStatus === 'Granted' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`;
+                }
+            }
+        } catch (e) {
+            showToast('Failed to update scholarship status', 'error');
+        }
+    }
+
+    async function handleBroadcastSubmit(e) {
+        e.preventDefault();
+        const content = document.getElementById('broadcastContent').value.trim();
+        const btn = document.getElementById('broadcastBtn');
+        const origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Broadcasting...';
+
+        try {
+            const res = await fetch("{{ route('admin.broadcast') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ content })
+            });
+            const data = await res.json();
+            if (data.success && data.post) {
+                posts.unshift(data.post);
+                document.getElementById('broadcastContent').value = '';
+                showToast(data.message);
+                switchScreen('home');
+                renderFeed();
+            } else {
+                showToast(data.message || 'Failed to broadcast notice', 'error');
+            }
+        } catch (e) {
+            showToast('Broadcast failed', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origText;
+        }
+    }
+
+    function filterResidentRegistry() {
+        const query = document.getElementById('residentSearchInput').value.toLowerCase();
+        document.querySelectorAll('.resident-row').forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
     }
 
     // ==============================================
@@ -1042,9 +1557,6 @@
                     <i class="fas fa-inbox text-4xl mb-3 text-slate-300"></i>
                     <p class="text-sm font-semibold text-slate-600">No posts in this category yet</p>
                     <p class="text-xs text-slate-400 mt-1">Be the first to share an update with fellow residents!</p>
-                    <button onclick="switchScreen('post')" class="mt-4 bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl">
-                        Create Post
-                    </button>
                 </div>
             `;
             return;
@@ -1061,8 +1573,8 @@
                             <p class="font-bold text-slate-900 text-sm">${post.author}</p>
                             <span class="text-xs text-slate-400">${post.time}</span>
                             ${post.type === 'question' ? '<span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Question</span>' : ''}
-                            ${post.type === 'announcement' ? '<span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">Announcement</span>' : ''}
-                            ${post.type === 'feedback' ? '<span class="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-bold">Feedback</span>' : ''}
+                            ${post.type === 'announcement' ? '<span class="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-200"><i class="fas fa-bullhorn mr-1 text-amber-600"></i> Official Notice</span>' : ''}
+                            ${post.type === 'feedback' ? '<span class="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-bold">Feedback</span>' : ''}
                             ${post.type === 'general' ? '<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">Community</span>' : ''}
                         </div>
                         <p class="text-slate-700 text-xs sm:text-sm mt-2 leading-relaxed whitespace-pre-line">${post.content}</p>
