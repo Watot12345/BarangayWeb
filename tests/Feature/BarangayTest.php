@@ -101,4 +101,15 @@ class BarangayTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonStructure(['reply', 'source']);
     }
+
+    public function test_ping_and_health_endpoints()
+    {
+        $ping = $this->get('/ping');
+        $ping->assertStatus(200);
+        $ping->assertSee('OK');
+
+        $health = $this->getJson('/health');
+        $health->assertStatus(200);
+        $health->assertJson(['status' => 'ok']);
+    }
 }

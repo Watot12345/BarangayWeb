@@ -8,6 +8,14 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\AiChatController;
 
+// Lightweight keep-alive / health-check endpoints for uptime monitors (cron-job.org)
+Route::get('/ping', function () {
+    return response('OK', 200)->header('Content-Type', 'text/plain');
+});
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()->toIso8601String()]);
+});
+
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
