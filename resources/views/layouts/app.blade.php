@@ -106,11 +106,12 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.55);
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(4px);
             z-index: 100;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
         .modal-bg.open {
@@ -119,18 +120,19 @@
 
         .modal-sheet {
             background: white;
-            border-radius: 1.5rem 1.5rem 0 0;
+            border-radius: 1.25rem;
             width: 100%;
             max-width: 520px;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
             padding: 1.5rem;
-            animation: slideUp 0.25s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: fadeInDialog 0.2s ease;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(60px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @keyframes fadeInDialog {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         /* Modal Headers - Guaranteed Gradient & White Text */
