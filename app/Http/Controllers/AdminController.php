@@ -107,8 +107,8 @@ class AdminController extends Controller
         $this->authorizeAdmin();
 
         $validated = $request->validate([
-            'content' => 'required|string|min:5|max:1500',
-            'media' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,gif,mp4,mov,webm', 'max:15360'],
+            'content' => 'required|string|min:3|max:1500',
+            'media' => ['nullable', 'file', 'max:15360'],
         ]);
 
         $mediaUrl = null;
@@ -116,22 +116,37 @@ class AdminController extends Controller
 
         if ($request->hasFile('media') && $request->file('media')->isValid()) {
             $file = $request->file('media');
-            $mime = $file->getMimeType();
+            $mime = strtolower((string)($file->getMimeType() ?: ''));
+            $ext = strtolower((string)($file->getClientOriginalExtension() ?: ''));
+
+            $imageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'heic', 'heif', 'svg'];
+            $videoExts = ['mp4', 'mov', 'webm', 'ogg', 'mkv', '3gp', 'avi', 'wmv'];
+
+            $isImage = str_starts_with($mime, 'image/') || in_array($ext, $imageExts);
+            $isVideo = str_starts_with($mime, 'video/') || in_array($ext, $videoExts);
+
+            if (!$isImage && !$isVideo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid file format. Please upload an image (JPG, PNG, WebP) or video (MP4, MOV, WebM).',
+                ], 422);
+            }
+
             $uploadDir = public_path('uploads/posts');
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
 
-            if (str_starts_with($mime, 'image/')) {
+            if ($isImage) {
                 $mediaType = 'image';
                 $filename = 'img_' . uniqid() . '_' . time() . '.webp';
                 $targetPath = $uploadDir . '/' . $filename;
                 $this->compressAndSaveImage($file, $targetPath);
                 $mediaUrl = asset('uploads/posts/' . $filename);
-            } elseif (str_starts_with($mime, 'video/')) {
+            } else {
                 $mediaType = 'video';
-                $ext = $file->getClientOriginalExtension() ?: 'mp4';
-                $filename = 'vid_' . uniqid() . '_' . time() . '.' . $ext;
+                $safeExt = in_array($ext, $videoExts) ? $ext : 'mp4';
+                $filename = 'vid_' . uniqid() . '_' . time() . '.' . $safeExt;
                 $file->move($uploadDir, $filename);
                 $mediaUrl = asset('uploads/posts/' . $filename);
             }

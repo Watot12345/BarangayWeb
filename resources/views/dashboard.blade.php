@@ -1559,8 +1559,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Content</label>
-                            <textarea id="postContent" rows="4" required placeholder="What would you like to share with Barangay San Agustin neighbors?..." 
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Content / Caption</label>
+                            <textarea id="postContent" rows="4" placeholder="What would you like to share with Barangay San Agustin neighbors?..." 
                                       class="w-full border border-slate-200 rounded-lg p-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-900 bg-slate-50"></textarea>
                         </div>
                         <div>
@@ -2431,7 +2431,11 @@
         e.preventDefault();
         const content = document.getElementById('postContent').value.trim();
         const type = document.getElementById('postType').value;
-        if (!content) return;
+        
+        if (!content && !mediaBlobs.post) {
+            showToast('Please type a message or choose a photo/video to share.', 'error');
+            return;
+        }
 
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const origText = submitBtn.innerHTML;
@@ -2458,7 +2462,7 @@
                 body: formData
             });
             const data = await res.json();
-            if (data.success && data.post) {
+            if (res.ok && data.success && data.post) {
                 posts.unshift(data.post);
                 document.getElementById('postContent').value = '';
                 clearMedia('post');
@@ -2466,10 +2470,14 @@
                 showToast('Post published to community feed!');
                 switchScreen('home');
             } else {
-                showToast(data.message || 'Failed to create post', 'error');
+                let errorMsg = data.message || 'Failed to create post';
+                if (data.errors) {
+                    errorMsg = Object.values(data.errors).flat().join(' ');
+                }
+                showToast(errorMsg, 'error');
             }
         } catch (err) {
-            showToast('Failed to create post', 'error');
+            showToast('Failed to create post. Please try again.', 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = origText;
@@ -2480,7 +2488,10 @@
     async function handleBroadcastSubmit(e) {
         e.preventDefault();
         const content = document.getElementById('broadcastContent').value.trim();
-        if (!content) return;
+        if (!content && !mediaBlobs.broadcast) {
+            showToast('Please enter an advisory message.', 'error');
+            return;
+        }
 
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const origText = submitBtn.innerHTML;
@@ -2505,7 +2516,7 @@
                 body: formData
             });
             const data = await res.json();
-            if (data.success && data.post) {
+            if (res.ok && data.success && data.post) {
                 posts.unshift(data.post);
                 document.getElementById('broadcastContent').value = '';
                 clearMedia('broadcast');
@@ -2513,10 +2524,14 @@
                 showToast('Official advisory published!');
                 switchScreen('home');
             } else {
-                showToast(data.message || 'Failed to publish advisory', 'error');
+                let errorMsg = data.message || 'Failed to publish advisory';
+                if (data.errors) {
+                    errorMsg = Object.values(data.errors).flat().join(' ');
+                }
+                showToast(errorMsg, 'error');
             }
         } catch (err) {
-            showToast('Failed to publish advisory', 'error');
+            showToast('Failed to publish advisory. Please try again.', 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = origText;

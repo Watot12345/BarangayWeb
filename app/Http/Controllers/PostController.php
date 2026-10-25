@@ -13,44 +13,76 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'content' => ['required', 'string', 'max:3000'],
-            'type' => ['nullable', 'string', 'in:general,question,announcement,feedback'],
+            'content' => ['nullable', 'string', 'max:3000'],
+            'type' => ['nullable', 'string'],
             'visibility' => ['nullable', 'string', 'max:50'],
-            'media' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,gif,mp4,mov,webm', 'max:15360'],
+            'media' => ['nullable', 'file', 'max:15360'],
         ]);
+
+        // Require at least content or an attached media file
+        if (empty(trim((string)$request->input('content'))) && !$request->hasFile('media')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide a message or attach a photo/video.',
+            ], 422);
+        }
 
         $mediaUrl = null;
         $mediaType = null;
 
         if ($request->hasFile('media') && $request->file('media')->isValid()) {
             $file = $request->file('media');
-            $mime = $file->getMimeType();
+            $mime = strtolower((string)($file->getMimeType() ?: ''));
+            $ext = strtolower((string)($file->getClientOriginalExtension() ?: ''));
+
+            $imageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'heic', 'heif', 'svg'];
+            $videoExts = ['mp4', 'mov', 'webm', 'ogg', 'mkv', '3gp', 'avi', 'wmv'];
+
+            $isImage = str_starts_with($mime, 'image/') || in_array($ext, $imageExts);
+            $isVideo = str_starts_with($mime, 'video/') || in_array($ext, $videoExts);
+
+            if (!$isImage && !$isVideo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid file format. Please upload an image (JPG, PNG, WebP) or video (MP4, MOV, WebM).',
+                ], 422);
+            }
+
             $uploadDir = public_path('uploads/posts');
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0755, true);
             }
 
-            if (str_starts_with($mime, 'image/')) {
+            if ($isImage) {
                 $mediaType = 'image';
                 $filename = 'img_' . uniqid() . '_' . time() . '.webp';
                 $targetPath = $uploadDir . '/' . $filename;
                 $this->compressAndSaveImage($file, $targetPath);
                 $mediaUrl = asset('uploads/posts/' . $filename);
-            } elseif (str_starts_with($mime, 'video/')) {
+            } else {
                 $mediaType = 'video';
-                $ext = $file->getClientOriginalExtension() ?: 'mp4';
-                $filename = 'vid_' . uniqid() . '_' . time() . '.' . $ext;
+                $safeExt = in_array($ext, $videoExts) ? $ext : 'mp4';
+                $filename = 'vid_' . uniqid() . '_' . time() . '.' . $safeExt;
                 $file->move($uploadDir, $filename);
                 $mediaUrl = asset('uploads/posts/' . $filename);
             }
         }
 
+        $content = trim((string)($validated['content'] ?? ''));
+        if (empty($content)) {
+            $content = $mediaType === 'video' ? 'Shared a community video.' : 'Shared a community photo.';
+        }
+
+        $postType = in_array($validated['type'] ?? '', ['general', 'question', 'announcement', 'feedback'])
+            ? $validated['type']
+            : 'general';
+
         $post = Post::create([
             'user_id' => Auth::id(),
-            'content' => $validated['content'],
+            'content' => $content,
             'media_url' => $mediaUrl,
             'media_type' => $mediaType,
-            'type' => $validated['type'] ?? 'general',
+            'type' => $postType,
             'visibility' => $validated['visibility'] ?? 'Public',
             'likes_count' => 0,
         ]);
