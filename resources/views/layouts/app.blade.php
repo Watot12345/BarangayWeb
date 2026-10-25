@@ -21,10 +21,37 @@
             color: #ffffff !important;
         }
         nav.navbar h1,
-        nav.navbar p,
-        nav.navbar span,
-        nav.navbar i {
+        nav.navbar p {
             color: #ffffff !important;
+        }
+        nav.navbar a.nav-link,
+        nav.navbar a.nav-link i,
+        nav.navbar #hamburger i {
+            color: #ffffff !important;
+        }
+
+        /* Register Button with Blue Icon and Text */
+        .btn-register,
+        nav.navbar .btn-register {
+            background-color: #ffffff !important;
+            color: #1d4ed8 !important;
+        }
+        .btn-register i,
+        .btn-register span,
+        nav.navbar .btn-register i,
+        nav.navbar .btn-register span {
+            color: #1d4ed8 !important;
+        }
+        .btn-register:hover,
+        nav.navbar .btn-register:hover {
+            background-color: #eff6ff !important;
+            color: #1e40af !important;
+        }
+        .btn-register:hover i,
+        .btn-register:hover span,
+        nav.navbar .btn-register:hover i,
+        nav.navbar .btn-register:hover span {
+            color: #1e40af !important;
         }
         nav.navbar a.nav-link {
             color: #ffffff !important;

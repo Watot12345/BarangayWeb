@@ -92,8 +92,8 @@
                         <button type="button" onclick="openLoginModal()" class="bg-blue-700 hover:bg-blue-800 text-white px-3.5 py-2 rounded-lg transition text-sm font-semibold cursor-pointer shadow-sm flex items-center gap-1.5">
                             <i class="fas fa-sign-in-alt"></i> Login
                         </button>
-                        <button type="button" onclick="openRegisterModal()" class="bg-white text-blue-900 hover:bg-blue-50 px-3.5 py-2 rounded-lg transition text-sm font-bold cursor-pointer shadow flex items-center gap-1.5">
-                            <i class="fas fa-user-plus"></i> Register
+                        <button type="button" onclick="openRegisterModal()" class="btn-register bg-white text-blue-700 hover:bg-blue-50 px-3.5 py-2 rounded-lg transition text-sm font-bold cursor-pointer shadow flex items-center gap-1.5">
+                            <i class="fas fa-user-plus text-blue-700" style="color: #1d4ed8 !important;"></i> Register
                         </button>
                     @endauth
                 </div>
@@ -123,8 +123,8 @@
                         <button type="button" onclick="openLoginModal()" class="w-full text-center bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg transition text-sm cursor-pointer font-medium flex items-center justify-center gap-1.5 shadow">
                             <i class="fas fa-sign-in-alt"></i> Login
                         </button>
-                        <button type="button" onclick="openRegisterModal()" class="w-full text-center bg-white text-blue-900 hover:bg-blue-50 px-4 py-2.5 rounded-lg transition text-sm cursor-pointer font-bold shadow flex items-center justify-center gap-1.5">
-                            <i class="fas fa-user-plus"></i> Register
+                        <button type="button" onclick="openRegisterModal()" class="btn-register w-full text-center bg-white text-blue-700 hover:bg-blue-50 px-4 py-2.5 rounded-lg transition text-sm cursor-pointer font-bold shadow flex items-center justify-center gap-1.5">
+                            <i class="fas fa-user-plus text-blue-700" style="color: #1d4ed8 !important;"></i> Register
                         </button>
                     @endauth
                 </div>
